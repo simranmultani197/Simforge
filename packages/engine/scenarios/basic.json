@@ -1,0 +1,91 @@
+{
+  "topology": {
+    "nodes": [
+      {
+        "id": "lb-1",
+        "config": {
+          "kind": "load-balancer",
+          "algorithm": "round-robin",
+          "maxConnections": 10000
+        },
+        "position": { "x": 0, "y": 0 },
+        "metadata": { "label": "Load Balancer" }
+      },
+      {
+        "id": "svc-1",
+        "config": {
+          "kind": "service",
+          "replicas": 1,
+          "latencyMs": { "type": "constant", "value": 10 },
+          "failureRate": 0.01,
+          "maxConcurrency": 100
+        },
+        "position": { "x": 200, "y": -100 },
+        "metadata": { "label": "Service 1" }
+      },
+      {
+        "id": "svc-2",
+        "config": {
+          "kind": "service",
+          "replicas": 1,
+          "latencyMs": { "type": "constant", "value": 10 },
+          "failureRate": 0.01,
+          "maxConcurrency": 100
+        },
+        "position": { "x": 200, "y": 0 },
+        "metadata": { "label": "Service 2" }
+      },
+      {
+        "id": "svc-3",
+        "config": {
+          "kind": "service",
+          "replicas": 1,
+          "latencyMs": { "type": "constant", "value": 10 },
+          "failureRate": 0.01,
+          "maxConcurrency": 100
+        },
+        "position": { "x": 200, "y": 100 },
+        "metadata": { "label": "Service 3" }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "lb-1",
+        "target": "svc-1",
+        "config": {
+          "latencyMs": { "type": "constant", "value": 1 },
+          "bandwidthMbps": 1000,
+          "failureRate": 0
+        }
+      },
+      {
+        "id": "e2",
+        "source": "lb-1",
+        "target": "svc-2",
+        "config": {
+          "latencyMs": { "type": "constant", "value": 1 },
+          "bandwidthMbps": 1000,
+          "failureRate": 0
+        }
+      },
+      {
+        "id": "e3",
+        "source": "lb-1",
+        "target": "svc-3",
+        "config": {
+          "latencyMs": { "type": "constant", "value": 1 },
+          "bandwidthMbps": 1000,
+          "failureRate": 0
+        }
+      }
+    ]
+  },
+  "config": {
+    "seed": 42,
+    "maxTimeMs": 10000,
+    "maxEvents": 1000000,
+    "requestRateRps": 1000,
+    "requestDistribution": "constant"
+  }
+}

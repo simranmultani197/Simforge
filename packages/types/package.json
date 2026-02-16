@@ -1,0 +1,25 @@
+{
+  "name": "@simforge/types",
+  "version": "0.1.0",
+  "description": "Shared type definitions for Simforge",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.0.0"
+  }
+}

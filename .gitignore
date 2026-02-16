@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+*.tsbuildinfo
+
+# Turbo
+.turbo/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Testing
+coverage/
+playwright-report/
+test-results/
+
+# Misc
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# AI agent local config
+.claude/
+.gemini/
+.agent/
