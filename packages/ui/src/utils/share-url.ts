@@ -78,3 +78,29 @@ export function buildShareUrl(
 ): string {
   return `${locationLike.origin}${locationLike.pathname}${locationLike.search}${buildShareHash(document)}`;
 }
+
+function toEmbedSearch(search: string): string {
+  const params = new URLSearchParams(search);
+  params.set('embed', '1');
+  const serialized = params.toString();
+  return serialized.length > 0 ? `?${serialized}` : '';
+}
+
+export function buildEmbedUrl(
+  document: ShareableDocument,
+  locationLike: Pick<Location, 'origin' | 'pathname' | 'search'>,
+): string {
+  return buildShareUrl(document, {
+    origin: locationLike.origin,
+    pathname: locationLike.pathname,
+    search: toEmbedSearch(locationLike.search),
+  });
+}
+
+export function buildIframeEmbedCode(
+  document: ShareableDocument,
+  locationLike: Pick<Location, 'origin' | 'pathname' | 'search'>,
+): string {
+  const src = buildEmbedUrl(document, locationLike).replace(/"/g, '&quot;');
+  return `<iframe src="${src}" width="100%" height="640" style="border:0;" loading="lazy" title="Simforge architecture widget"></iframe>`;
+}

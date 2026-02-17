@@ -3,6 +3,7 @@ import { useTopologyStore } from '../stores/topology-store';
 import { useSimulationStore } from '../stores/simulation-store';
 import { useToast } from './useToast';
 import {
+  buildIframeEmbedCode,
   buildShareUrl,
   decodeShareDocument,
   getEncodedPayloadFromHash,
@@ -39,15 +40,14 @@ export function useShareableUrl(options: UseShareableUrlOptions = {}) {
   const hasLoadedRef = useRef(false);
 
   const copyShareUrl = useCallback(async () => {
+    const document = {
+      version: 1 as const,
+      topology: toSimTopology(),
+      config,
+    };
+
     try {
-      const url = buildShareUrl(
-        {
-          version: 1,
-          topology: toSimTopology(),
-          config,
-        },
-        window.location,
-      );
+      const url = buildShareUrl(document, window.location);
 
       window.history.replaceState(null, '', url);
       await copyToClipboard(url);
@@ -55,6 +55,26 @@ export function useShareableUrl(options: UseShareableUrlOptions = {}) {
     } catch (error) {
       console.error('[Simforge] Failed to create share URL:', error);
       toast('Failed to create share URL.', 'error');
+    }
+  }, [config, toSimTopology, toast]);
+
+  const copyEmbedCode = useCallback(async () => {
+    const document = {
+      version: 1 as const,
+      topology: toSimTopology(),
+      config,
+    };
+
+    try {
+      const embedCode = buildIframeEmbedCode(document, window.location);
+      const embedUrl = buildShareUrl(document, window.location);
+
+      window.history.replaceState(null, '', embedUrl);
+      await copyToClipboard(embedCode);
+      toast('Iframe embed code copied to clipboard.', 'success');
+    } catch (error) {
+      console.error('[Simforge] Failed to create embed code:', error);
+      toast('Failed to create iframe embed code.', 'error');
     }
   }, [config, toSimTopology, toast]);
 
@@ -83,6 +103,7 @@ export function useShareableUrl(options: UseShareableUrlOptions = {}) {
 
   return {
     copyShareUrl,
+    copyEmbedCode,
     loadFromCurrentHash,
   };
 }

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { ShareableDocument } from '../../src/utils/share-url';
 import {
+  buildEmbedUrl,
+  buildIframeEmbedCode,
   buildShareHash,
   buildShareUrl,
   decodeShareDocument,
@@ -71,5 +73,27 @@ describe('share-url utilities', () => {
     });
 
     expect(url.startsWith('https://simforge.dev/app?mode=demo#sf=')).toBe(true);
+  });
+
+  it('builds embed URL with embed=1 query parameter', () => {
+    const url = buildEmbedUrl(sampleDocument, {
+      origin: 'https://simforge.dev',
+      pathname: '/app',
+      search: '?mode=demo',
+    });
+
+    expect(url.startsWith('https://simforge.dev/app?mode=demo&embed=1#sf=')).toBe(true);
+  });
+
+  it('builds iframe embed code snippet', () => {
+    const code = buildIframeEmbedCode(sampleDocument, {
+      origin: 'https://simforge.dev',
+      pathname: '/app',
+      search: '',
+    });
+
+    expect(code).toContain('<iframe');
+    expect(code).toContain('embed=1#sf=');
+    expect(code).toContain('title="Simforge architecture widget"');
   });
 });

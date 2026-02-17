@@ -14,7 +14,12 @@ import { nodeTypes } from './nodes';
 import { edgeTypes } from './edges';
 import type { SimforgeNodeType, SimforgeNode, SimforgeEdge } from '../../types/flow';
 
-function EmptyCanvasOverlay() {
+interface EmptyCanvasOverlayProps {
+  title: string;
+  description: string;
+}
+
+function EmptyCanvasOverlay({ title, description }: EmptyCanvasOverlayProps) {
   return (
     <div
       className="sf-empty-state"
@@ -40,15 +45,27 @@ function EmptyCanvasOverlay() {
         <line x1="8" y1="21" x2="16" y2="21" />
         <line x1="12" y1="17" x2="12" y2="21" />
       </svg>
-      <div className="sf-empty-state__title">Design your system</div>
-      <div className="sf-empty-state__text">
-        Drag components from the left panel onto the canvas, then connect them to build your architecture.
-      </div>
+      <div className="sf-empty-state__title">{title}</div>
+      <div className="sf-empty-state__text">{description}</div>
     </div>
   );
 }
 
-export function SimforgeCanvas() {
+interface SimforgeCanvasProps {
+  readOnly?: boolean;
+  emptyTitle?: string;
+  emptyDescription?: string;
+  showControls?: boolean;
+  showMiniMap?: boolean;
+}
+
+export function SimforgeCanvas({
+  readOnly = false,
+  emptyTitle = 'Design your system',
+  emptyDescription = 'Drag components from the left panel onto the canvas, then connect them to build your architecture.',
+  showControls = true,
+  showMiniMap = true,
+}: SimforgeCanvasProps = {}) {
   const { screenToFlowPosition } = useReactFlow();
 
   // Zustand selectors — subscribe to individual slices for performance
@@ -125,32 +142,42 @@ export function SimforgeCanvas() {
 
   return (
     <div className="h-full w-full relative">
-      {isEmpty && <EmptyCanvasOverlay />}
+      {isEmpty && (
+        <EmptyCanvasOverlay
+          title={emptyTitle}
+          description={emptyDescription}
+        />
+      )}
       <ReactFlow
         nodes={nodes}
         edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
+        onNodesChange={readOnly ? undefined : onNodesChange}
+        onEdgesChange={readOnly ? undefined : onEdgesChange}
+        onConnect={readOnly ? undefined : onConnect}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         defaultEdgeOptions={{ type: 'simforge', animated: false }}
-        isValidConnection={isValidConnection}
-        onDragOver={onDragOver}
-        onDrop={onDrop}
-        onNodeClick={onNodeClick}
-        onEdgeClick={onEdgeClick}
-        onPaneClick={onPaneClick}
+        isValidConnection={readOnly ? undefined : isValidConnection}
+        onDragOver={readOnly ? undefined : onDragOver}
+        onDrop={readOnly ? undefined : onDrop}
+        onNodeClick={readOnly ? undefined : onNodeClick}
+        onEdgeClick={readOnly ? undefined : onEdgeClick}
+        onPaneClick={readOnly ? undefined : onPaneClick}
+        nodesDraggable={!readOnly}
+        nodesConnectable={!readOnly}
+        elementsSelectable={!readOnly}
+        deleteKeyCode={readOnly ? undefined : ['Backspace', 'Delete']}
         fitView
-        deleteKeyCode={['Backspace', 'Delete']}
         proOptions={{ hideAttribution: true }}
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="var(--sf-text-muted)" />
-        <Controls />
-        <MiniMap
-          nodeStrokeWidth={3}
-          className="!bg-[var(--sf-bg-secondary)]"
-        />
+        {showControls && <Controls />}
+        {showMiniMap && (
+          <MiniMap
+            nodeStrokeWidth={3}
+            className="!bg-[var(--sf-bg-secondary)]"
+          />
+        )}
       </ReactFlow>
     </div>
   );

@@ -10,7 +10,7 @@ import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useShareableUrl } from '../hooks/useShareableUrl';
 
-function AppContent() {
+function EditorAppContent() {
   useShareableUrl();
   useKeyboardShortcuts();
   useAutoSave();
@@ -74,12 +74,41 @@ function AppContent() {
   );
 }
 
+function EmbedAppContent() {
+  useShareableUrl();
+
+  return (
+    <div style={{ height: '100%', width: '100%', position: 'relative' }}>
+      <ErrorBoundary fallbackTitle="Widget error">
+        <SimforgeCanvas
+          readOnly
+          showControls={false}
+          showMiniMap={false}
+          emptyTitle="No Shared Design"
+          emptyDescription="Add a share hash to the iframe URL to render a Simforge architecture."
+        />
+      </ErrorBoundary>
+      <div className="sf-embed-watermark" aria-label="Powered by Simforge">
+        Powered by Simforge
+      </div>
+    </div>
+  );
+}
+
+function isEmbedMode(): boolean {
+  if (typeof window === 'undefined') return false;
+  const value = new URLSearchParams(window.location.search).get('embed');
+  return value === '1' || value === 'true';
+}
+
 export default function App() {
+  const embedMode = isEmbedMode();
+
   return (
     <ErrorBoundary fallbackTitle="Application error">
       <ToastProvider>
         <Providers>
-          <AppContent />
+          {embedMode ? <EmbedAppContent /> : <EditorAppContent />}
         </Providers>
       </ToastProvider>
     </ErrorBoundary>
