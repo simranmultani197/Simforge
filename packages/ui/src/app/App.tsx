@@ -8,8 +8,10 @@ import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { ToastProvider } from '../components/common/ToastProvider';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useAutoSave } from '../hooks/useAutoSave';
+import { useShareableUrl } from '../hooks/useShareableUrl';
 
 function AppContent() {
+  useShareableUrl();
   useKeyboardShortcuts();
   useAutoSave();
 

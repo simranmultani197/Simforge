@@ -17,6 +17,7 @@
     "@simforge/engine": "workspace:*",
     "@simforge/types": "workspace:*",
     "@xyflow/react": "^12.0.0",
+    "lz-string": "^1.5.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "recharts": "^2.15.0",

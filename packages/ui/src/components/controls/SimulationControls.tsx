@@ -2,6 +2,7 @@ import { useSimulationWorker } from '../../hooks/useSimulationWorker';
 import { useSimulationStore } from '../../stores/simulation-store';
 import { useUiStore } from '../../stores/ui-store';
 import { useFileIO } from '../../hooks/useFileIO';
+import { useShareableUrl } from '../../hooks/useShareableUrl';
 import { ThemeToggle } from '../common/ThemeToggle';
 
 export function SimulationControls() {
@@ -13,6 +14,7 @@ export function SimulationControls() {
   const toggleMetrics = useUiStore((s) => s.toggleMetrics);
   const metricsOpen = useUiStore((s) => s.metricsOpen);
   const { saveDesign, loadDesign } = useFileIO();
+  const { copyShareUrl } = useShareableUrl({ autoLoad: false });
 
   const isRunning = status === 'running';
   const isCompleted = status === 'completed';
@@ -118,6 +120,19 @@ export function SimulationControls() {
           <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
         </svg>
         Load
+      </button>
+
+      <button
+        onClick={() => void copyShareUrl()}
+        className="sf-btn sf-btn--secondary"
+        title="Copy share URL (Cmd+Shift+C)"
+        aria-label="Copy shareable URL"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07L11 4" />
+          <path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 1 0 7.07 7.07L13 19" />
+        </svg>
+        Share
       </button>
 
       {/* Divider */}

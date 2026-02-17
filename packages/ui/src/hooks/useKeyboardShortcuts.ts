@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useTopologyStore } from '../stores/topology-store';
 import { useFileIO } from './useFileIO';
+import { useShareableUrl } from './useShareableUrl';
 
 /**
  * Global keyboard shortcuts for the application.
@@ -9,10 +10,12 @@ import { useFileIO } from './useFileIO';
  * - Cmd/Ctrl + Shift + Z: Redo
  * - Cmd/Ctrl + S: Save design as .simforge.json
  * - Cmd/Ctrl + O: Load design from .simforge.json
+ * - Cmd/Ctrl + Shift + C: Copy shareable URL
  * - Delete/Backspace: Handled by React Flow's deleteKeyCode
  */
 export function useKeyboardShortcuts() {
   const { saveDesign, loadDesign } = useFileIO();
+  const { copyShareUrl } = useShareableUrl({ autoLoad: false });
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -54,9 +57,15 @@ export function useKeyboardShortcuts() {
         loadDesign();
         return;
       }
+
+      // Cmd+Shift+C: Copy share URL
+      if (meta && e.shiftKey && e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        void copyShareUrl();
+      }
     }
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [saveDesign, loadDesign]);
+  }, [copyShareUrl, saveDesign, loadDesign]);
 }

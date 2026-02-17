@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useTopologyStore } from '../stores/topology-store';
 import { useSimulationStore } from '../stores/simulation-store';
 import { useToast } from './useToast';
+import { hasShareHash } from '../utils/share-url';
 
 const AUTOSAVE_KEY = 'simforge-autosave';
 const AUTOSAVE_INTERVAL_MS = 30_000;
@@ -9,7 +10,7 @@ const AUTOSAVE_INTERVAL_MS = 30_000;
 /**
  * Auto-saves the current topology + config to localStorage every 30 seconds
  * and on tab visibility change (blur). On mount, restores from localStorage
- * if a previous session was saved.
+ * if a previous session was saved, unless a share URL hash is present.
  */
 export function useAutoSave(): void {
   const { toast } = useToast();
@@ -19,6 +20,11 @@ export function useAutoSave(): void {
   useEffect(() => {
     if (hasRestoredRef.current) return;
     hasRestoredRef.current = true;
+
+    // Prefer explicit share-link payloads over autosaved local state.
+    if (typeof window !== 'undefined' && hasShareHash(window.location.hash)) {
+      return;
+    }
 
     try {
       const saved = localStorage.getItem(AUTOSAVE_KEY);
