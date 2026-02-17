@@ -1,10 +1,16 @@
-import type { SimNode } from '@simforge/types';
+import type { SimNode, ApiGatewayConfig } from '@simforge/types';
 import { createServiceState } from '../behaviors/service';
 import type { ServiceState } from '../behaviors/service';
 import { createLoadBalancerState } from '../behaviors/load-balancer';
 import type { LoadBalancerState } from '../behaviors/load-balancer';
 import { createQueueState } from '../behaviors/queue';
 import type { QueueState } from '../behaviors/queue';
+import { createDatabaseState } from '../behaviors/database';
+import type { DatabaseState } from '../behaviors/database';
+import { createCacheState } from '../behaviors/cache';
+import type { CacheState } from '../behaviors/cache';
+import { createApiGatewayState } from '../behaviors/api-gateway';
+import type { ApiGatewayState } from '../behaviors/api-gateway';
 import type { TopologyGraph } from './topology-graph';
 import { getOutTargetIds } from './topology-graph';
 
@@ -14,7 +20,10 @@ import { getOutTargetIds } from './topology-graph';
 export type NodeState =
   | { kind: 'service'; state: ServiceState }
   | { kind: 'load-balancer'; state: LoadBalancerState }
-  | { kind: 'queue'; state: QueueState };
+  | { kind: 'queue'; state: QueueState }
+  | { kind: 'database'; state: DatabaseState }
+  | { kind: 'cache'; state: CacheState }
+  | { kind: 'api-gateway'; state: ApiGatewayState };
 
 /**
  * Create the initial runtime state for a node based on its config kind.
@@ -31,6 +40,15 @@ export function createNodeState(node: SimNode, graph: TopologyGraph): NodeState 
 
     case 'queue':
       return { kind: 'queue', state: createQueueState() };
+
+    case 'database':
+      return { kind: 'database', state: createDatabaseState() };
+
+    case 'cache':
+      return { kind: 'cache', state: createCacheState() };
+
+    case 'api-gateway':
+      return { kind: 'api-gateway', state: createApiGatewayState(node.config as ApiGatewayConfig) };
   }
 }
 

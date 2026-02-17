@@ -17,6 +17,9 @@ import type { NodeState } from './node-state';
 import { handleServiceRequest, handleServiceComplete } from '../behaviors/service';
 import { handleLoadBalancerRequest } from '../behaviors/load-balancer';
 import { handleQueueEnqueue, handleQueueDequeue } from '../behaviors/queue';
+import { handleDatabaseRequest, handleDatabaseComplete } from '../behaviors/database';
+import { handleCacheRequest, handleCacheComplete } from '../behaviors/cache';
+import { handleApiGatewayRequest, handleApiGatewayComplete } from '../behaviors/api-gateway';
 import { generateRequests } from './request-generator';
 
 /**
@@ -220,6 +223,39 @@ export class Simulator {
           this.rng,
         );
         break;
+
+      case 'database':
+        handleDatabaseRequest(
+          event,
+          node.config as Extract<typeof node.config, { kind: 'database' }>,
+          nodeState.state,
+          this.engine,
+          this.rng,
+          outTargetIds,
+        );
+        break;
+
+      case 'cache':
+        handleCacheRequest(
+          event,
+          node.config as Extract<typeof node.config, { kind: 'cache' }>,
+          nodeState.state,
+          this.engine,
+          this.rng,
+          outTargetIds,
+        );
+        break;
+
+      case 'api-gateway':
+        handleApiGatewayRequest(
+          event,
+          node.config as Extract<typeof node.config, { kind: 'api-gateway' }>,
+          nodeState.state,
+          this.engine,
+          this.rng,
+          outTargetIds,
+        );
+        break;
     }
   }
 
@@ -230,12 +266,31 @@ export class Simulator {
    */
   private handleComplete(event: SimEvent): void {
     const nodeState = this.nodeStates.get(event.nodeId);
-    if (!nodeState || nodeState.kind !== 'service') return;
+    if (!nodeState) return;
 
-    handleServiceComplete(event, nodeState.state);
+    // Dispatch to correct complete handler
+    switch (nodeState.kind) {
+      case 'service':
+        handleServiceComplete(event, nodeState.state);
+        break;
+      case 'database':
+        handleDatabaseComplete(event, nodeState.state);
+        break;
+      case 'cache':
+        handleCacheComplete(event, nodeState.state);
+        break;
+      case 'api-gateway':
+        handleApiGatewayComplete(event, nodeState.state);
+        break;
+      case 'load-balancer':
+      case 'queue':
+        // These don't have complete handlers
+        return;
+    }
 
-    // Check for outgoing edges to forward the request
-    const outEdges = this.graph.outEdges.get(event.nodeId) ?? [];
+    // Resolve outgoing edges for forwarding.
+    // Some behaviors (e.g. cache hit path) override forwarding targets via payload.outEdges.
+    const outEdges = this.resolveOutEdges(event);
 
     if (outEdges.length === 0) {
       // Terminal node — record end-to-end latency
@@ -324,6 +379,15 @@ export class Simulator {
           activeConnections[nodeId] = total;
           break;
         }
+        case 'database':
+          activeConnections[nodeId] = nodeState.state.activeConnections;
+          break;
+        case 'cache':
+          activeConnections[nodeId] = nodeState.state.activeRequests;
+          break;
+        case 'api-gateway':
+          activeConnections[nodeId] = nodeState.state.activeRequests;
+          break;
       }
     }
 
@@ -340,5 +404,20 @@ export class Simulator {
         payload: {},
       });
     }
+  }
+
+  private resolveOutEdges(event: SimEvent) {
+    const graphOutEdges = this.graph.outEdges.get(event.nodeId) ?? [];
+    const payloadOutEdges = event.payload['outEdges'];
+
+    if (!Array.isArray(payloadOutEdges)) {
+      return graphOutEdges;
+    }
+
+    const allowedTargets = new Set(
+      payloadOutEdges.filter((target): target is string => typeof target === 'string'),
+    );
+
+    return graphOutEdges.filter((edge) => allowedTargets.has(edge.target));
   }
 }

@@ -32,6 +32,12 @@ export { handleLoadBalancerRequest } from './behaviors/load-balancer';
 export type { LoadBalancerState } from './behaviors/load-balancer';
 export { handleQueueEnqueue, handleQueueDequeue } from './behaviors/queue';
 export type { QueueState } from './behaviors/queue';
+export { handleDatabaseRequest, handleDatabaseComplete } from './behaviors/database';
+export type { DatabaseState } from './behaviors/database';
+export { handleCacheRequest, handleCacheComplete } from './behaviors/cache';
+export type { CacheState } from './behaviors/cache';
+export { handleApiGatewayRequest, handleApiGatewayComplete } from './behaviors/api-gateway';
+export type { ApiGatewayState } from './behaviors/api-gateway';
 
 // Worker protocol types
 export type { WorkerCommand, WorkerEvent } from './worker/protocol';
