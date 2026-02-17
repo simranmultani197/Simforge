@@ -3,6 +3,9 @@ import type {
   ServiceConfig,
   LoadBalancerConfig,
   QueueConfig,
+  DatabaseConfig,
+  CacheConfig,
+  ApiGatewayConfig,
   Distribution,
 } from '@simforge/types';
 
@@ -28,6 +31,24 @@ export interface QueueNodeData {
   [key: string]: unknown;
 }
 
+export interface DatabaseNodeData {
+  label: string;
+  config: DatabaseConfig;
+  [key: string]: unknown;
+}
+
+export interface CacheNodeData {
+  label: string;
+  config: CacheConfig;
+  [key: string]: unknown;
+}
+
+export interface ApiGatewayNodeData {
+  label: string;
+  config: ApiGatewayConfig;
+  [key: string]: unknown;
+}
+
 // ---------------------------------------------------------------------------
 // Discriminated React Flow node union
 // ---------------------------------------------------------------------------
@@ -35,8 +56,17 @@ export interface QueueNodeData {
 export type ServiceFlowNode = Node<ServiceNodeData, 'service'>;
 export type LoadBalancerFlowNode = Node<LoadBalancerNodeData, 'load-balancer'>;
 export type QueueFlowNode = Node<QueueNodeData, 'queue'>;
+export type DatabaseFlowNode = Node<DatabaseNodeData, 'database'>;
+export type CacheFlowNode = Node<CacheNodeData, 'cache'>;
+export type ApiGatewayFlowNode = Node<ApiGatewayNodeData, 'api-gateway'>;
 
-export type SimforgeNode = ServiceFlowNode | LoadBalancerFlowNode | QueueFlowNode;
+export type SimforgeNode =
+  | ServiceFlowNode
+  | LoadBalancerFlowNode
+  | QueueFlowNode
+  | DatabaseFlowNode
+  | CacheFlowNode
+  | ApiGatewayFlowNode;
 
 // ---------------------------------------------------------------------------
 // Edge data — mirrors SimEdge.config
@@ -55,4 +85,10 @@ export type SimforgeEdge = Edge<SimforgeEdgeData, 'simforge'>;
 // String literal union for node type keys
 // ---------------------------------------------------------------------------
 
-export type SimforgeNodeType = 'service' | 'load-balancer' | 'queue';
+export type SimforgeNodeType =
+  | 'service'
+  | 'load-balancer'
+  | 'queue'
+  | 'database'
+  | 'cache'
+  | 'api-gateway';

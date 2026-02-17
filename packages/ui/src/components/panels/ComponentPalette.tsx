@@ -37,6 +37,29 @@ const QueueIcon = () => (
   </svg>
 );
 
+const DatabaseIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <ellipse cx="12" cy="5" rx="7" ry="3" />
+    <path d="M5 5v14c0 1.7 3.1 3 7 3s7-1.3 7-3V5" />
+    <path d="M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3" />
+  </svg>
+);
+
+const CacheIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="4" y="5" width="16" height="5" rx="1" />
+    <rect x="4" y="11" width="16" height="5" rx="1" />
+    <rect x="4" y="17" width="16" height="2" rx="1" />
+  </svg>
+);
+
+const ApiGatewayIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2l7 4v6c0 5-3.5 9-7 10-3.5-1-7-5-7-10V6l7-4z" />
+    <path d="M9 12h6" />
+  </svg>
+);
+
 const PALETTE_ITEMS: PaletteItem[] = [
   {
     type: 'service',
@@ -59,12 +82,36 @@ const PALETTE_ITEMS: PaletteItem[] = [
     colorClass: 'queue',
     icon: <QueueIcon />,
   },
+  {
+    type: 'database',
+    label: 'Database',
+    description: 'Persists read/write workloads',
+    colorClass: 'database',
+    icon: <DatabaseIcon />,
+  },
+  {
+    type: 'cache',
+    label: 'Cache',
+    description: 'Serves hot paths with hit/miss behavior',
+    colorClass: 'cache',
+    icon: <CacheIcon />,
+  },
+  {
+    type: 'api-gateway',
+    label: 'API Gateway',
+    description: 'Applies auth, limits, and traffic control',
+    colorClass: 'gateway',
+    icon: <ApiGatewayIcon />,
+  },
 ];
 
 const ICON_STYLES: Record<string, React.CSSProperties> = {
   service: { background: 'var(--sf-node-service-soft)', color: 'var(--sf-node-service)' },
   lb: { background: 'var(--sf-node-lb-soft)', color: 'var(--sf-node-lb)' },
   queue: { background: 'var(--sf-node-queue-soft)', color: 'var(--sf-node-queue)' },
+  database: { background: 'var(--sf-node-database-soft)', color: 'var(--sf-node-database)' },
+  cache: { background: 'var(--sf-node-cache-soft)', color: 'var(--sf-node-cache)' },
+  gateway: { background: 'var(--sf-node-gateway-soft)', color: 'var(--sf-node-gateway)' },
 };
 
 export function ComponentPalette() {

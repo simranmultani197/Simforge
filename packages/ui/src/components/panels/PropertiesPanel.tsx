@@ -2,8 +2,18 @@ import { useTopologyStore } from '../../stores/topology-store';
 import { ServiceProperties } from './properties/ServiceProperties';
 import { LoadBalancerProperties } from './properties/LoadBalancerProperties';
 import { QueueProperties } from './properties/QueueProperties';
+import { DatabaseProperties } from './properties/DatabaseProperties';
+import { CacheProperties } from './properties/CacheProperties';
+import { ApiGatewayProperties } from './properties/ApiGatewayProperties';
 import { EdgeProperties } from './properties/EdgeProperties';
-import type { ServiceFlowNode, LoadBalancerFlowNode, QueueFlowNode } from '../../types/flow';
+import type {
+  ServiceFlowNode,
+  LoadBalancerFlowNode,
+  QueueFlowNode,
+  DatabaseFlowNode,
+  CacheFlowNode,
+  ApiGatewayFlowNode,
+} from '../../types/flow';
 
 export function PropertiesPanel() {
   const selectedNodeId = useTopologyStore((s) => s.selectedNodeId);
@@ -26,6 +36,12 @@ export function PropertiesPanel() {
         return <LoadBalancerProperties node={selectedNode as LoadBalancerFlowNode} />;
       case 'queue':
         return <QueueProperties node={selectedNode as QueueFlowNode} />;
+      case 'database':
+        return <DatabaseProperties node={selectedNode as DatabaseFlowNode} />;
+      case 'cache':
+        return <CacheProperties node={selectedNode as CacheFlowNode} />;
+      case 'api-gateway':
+        return <ApiGatewayProperties node={selectedNode as ApiGatewayFlowNode} />;
     }
   }
 

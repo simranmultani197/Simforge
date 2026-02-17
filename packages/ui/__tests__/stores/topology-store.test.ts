@@ -42,6 +42,42 @@ describe('topology-store', () => {
     expect(nodes[0]!.data.config.kind).toBe('queue');
   });
 
+  it('addNode creates a database node with defaults', () => {
+    useTopologyStore.getState().addNode('database', { x: 10, y: 10 });
+
+    const { nodes } = useTopologyStore.getState();
+    expect(nodes).toHaveLength(1);
+    expect(nodes[0]!.data.config.kind).toBe('database');
+    if (nodes[0]!.data.config.kind === 'database') {
+      expect(nodes[0]!.data.config.engine).toBe('postgres');
+      expect(nodes[0]!.data.config.maxConnections).toBeGreaterThan(0);
+    }
+  });
+
+  it('addNode creates a cache node with defaults', () => {
+    useTopologyStore.getState().addNode('cache', { x: 10, y: 10 });
+
+    const { nodes } = useTopologyStore.getState();
+    expect(nodes).toHaveLength(1);
+    expect(nodes[0]!.data.config.kind).toBe('cache');
+    if (nodes[0]!.data.config.kind === 'cache') {
+      expect(nodes[0]!.data.config.hitRate).toBeGreaterThan(0);
+      expect(nodes[0]!.data.config.hitRate).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('addNode creates an api-gateway node with defaults', () => {
+    useTopologyStore.getState().addNode('api-gateway', { x: 10, y: 10 });
+
+    const { nodes } = useTopologyStore.getState();
+    expect(nodes).toHaveLength(1);
+    expect(nodes[0]!.data.config.kind).toBe('api-gateway');
+    if (nodes[0]!.data.config.kind === 'api-gateway') {
+      expect(nodes[0]!.data.config.rateLimitRps).toBeGreaterThan(0);
+      expect(nodes[0]!.data.config.maxConcurrentRequests).toBeGreaterThan(0);
+    }
+  });
+
   // ----- removeNode -----
 
   it('removeNode deletes the node and associated edges', () => {
@@ -279,5 +315,21 @@ describe('topology-store', () => {
     expect(restored.edges).toHaveLength(1);
     expect(restored.nodes[0]!.data.config.kind).toBe('queue');
     expect(restored.nodes[1]!.data.config.kind).toBe('service');
+  });
+
+  it('serializes and restores newly added component kinds', () => {
+    const store = useTopologyStore.getState();
+    store.addNode('api-gateway', { x: 10, y: 10 });
+    store.addNode('cache', { x: 120, y: 40 });
+    store.addNode('database', { x: 240, y: 70 });
+
+    const topology = store.toSimTopology();
+    expect(topology.nodes.map((n) => n.config.kind)).toEqual(['api-gateway', 'cache', 'database']);
+
+    useTopologyStore.setState({ nodes: [], edges: [] });
+    useTopologyStore.getState().fromSimTopology(topology);
+
+    const restored = useTopologyStore.getState().nodes.map((n) => n.data.config.kind);
+    expect(restored).toEqual(['api-gateway', 'cache', 'database']);
   });
 });

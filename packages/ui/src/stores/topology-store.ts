@@ -43,12 +43,44 @@ const DEFAULT_CONFIGS: Record<SimforgeNodeType, ComponentConfig> = {
     processingTimeMs: { type: 'constant', value: 10 },
     deadLetterEnabled: false,
   },
+  database: {
+    kind: 'database',
+    engine: 'postgres',
+    maxConnections: 100,
+    queryLatencyMs: { type: 'normal', mean: 5, stddev: 2 },
+    writeLatencyMs: { type: 'normal', mean: 10, stddev: 3 },
+    failureRate: 0.001,
+    connectionPoolSize: 100,
+    replicationFactor: 1,
+  },
+  cache: {
+    kind: 'cache',
+    evictionPolicy: 'lru',
+    maxSizeMb: 256,
+    hitRate: 0.85,
+    hitLatencyMs: { type: 'constant', value: 1 },
+    missLatencyMs: { type: 'constant', value: 2 },
+    ttlMs: 60000,
+    maxEntries: 100000,
+  },
+  'api-gateway': {
+    kind: 'api-gateway',
+    rateLimitRps: 1000,
+    burstSize: 50,
+    authLatencyMs: { type: 'constant', value: 3 },
+    routes: 8,
+    failureRate: 0.001,
+    maxConcurrentRequests: 1000,
+  },
 };
 
 const DEFAULT_LABELS: Record<SimforgeNodeType, string> = {
   service: 'Service',
   'load-balancer': 'Load Balancer',
   queue: 'Queue',
+  database: 'Database',
+  cache: 'Cache',
+  'api-gateway': 'API Gateway',
 };
 
 const DEFAULT_EDGE_DATA: SimforgeEdgeData = {

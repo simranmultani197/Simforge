@@ -49,6 +49,15 @@
   --sf-node-queue: #f59e0b;
   --sf-node-queue-soft: rgba(245, 158, 11, 0.08);
   --sf-node-queue-gradient: linear-gradient(135deg, #f59e0b, #f97316);
+  --sf-node-database: #10b981;
+  --sf-node-database-soft: rgba(16, 185, 129, 0.08);
+  --sf-node-database-gradient: linear-gradient(135deg, #10b981, #14b8a6);
+  --sf-node-cache: #f43f5e;
+  --sf-node-cache-soft: rgba(244, 63, 94, 0.08);
+  --sf-node-cache-gradient: linear-gradient(135deg, #f43f5e, #ec4899);
+  --sf-node-gateway: #06b6d4;
+  --sf-node-gateway-soft: rgba(6, 182, 212, 0.08);
+  --sf-node-gateway-gradient: linear-gradient(135deg, #06b6d4, #0ea5e9);
 
   /* Effects */
   --sf-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -82,6 +91,9 @@
     --sf-node-service-soft: rgba(59, 130, 246, 0.12);
     --sf-node-lb-soft: rgba(139, 92, 246, 0.12);
     --sf-node-queue-soft: rgba(245, 158, 11, 0.12);
+    --sf-node-database-soft: rgba(16, 185, 129, 0.12);
+    --sf-node-cache-soft: rgba(244, 63, 94, 0.12);
+    --sf-node-gateway-soft: rgba(6, 182, 212, 0.12);
 
     --sf-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
     --sf-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -112,6 +124,9 @@
   --sf-node-service-soft: rgba(59, 130, 246, 0.12);
   --sf-node-lb-soft: rgba(139, 92, 246, 0.12);
   --sf-node-queue-soft: rgba(245, 158, 11, 0.12);
+  --sf-node-database-soft: rgba(16, 185, 129, 0.12);
+  --sf-node-cache-soft: rgba(244, 63, 94, 0.12);
+  --sf-node-gateway-soft: rgba(6, 182, 212, 0.12);
 
   --sf-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
   --sf-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -315,6 +330,45 @@ body {
   box-shadow: 0 0 0 3px var(--sf-node-queue-soft), var(--sf-shadow-md);
 }
 
+.sf-node--database {
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.sf-node--database::before {
+  background: var(--sf-node-database-gradient);
+}
+
+.sf-node--database.selected {
+  border-color: var(--sf-node-database);
+  box-shadow: 0 0 0 3px var(--sf-node-database-soft), var(--sf-shadow-md);
+}
+
+.sf-node--cache {
+  border-color: rgba(244, 63, 94, 0.2);
+}
+
+.sf-node--cache::before {
+  background: var(--sf-node-cache-gradient);
+}
+
+.sf-node--cache.selected {
+  border-color: var(--sf-node-cache);
+  box-shadow: 0 0 0 3px var(--sf-node-cache-soft), var(--sf-shadow-md);
+}
+
+.sf-node--api-gateway {
+  border-color: rgba(6, 182, 212, 0.2);
+}
+
+.sf-node--api-gateway::before {
+  background: var(--sf-node-gateway-gradient);
+}
+
+.sf-node--api-gateway.selected {
+  border-color: var(--sf-node-gateway);
+  box-shadow: 0 0 0 3px var(--sf-node-gateway-soft), var(--sf-shadow-md);
+}
+
 .sf-node__icon {
   display: flex;
   align-items: center;
@@ -338,6 +392,21 @@ body {
 .sf-node--queue .sf-node__icon {
   background: var(--sf-node-queue-soft);
   color: var(--sf-node-queue);
+}
+
+.sf-node--database .sf-node__icon {
+  background: var(--sf-node-database-soft);
+  color: var(--sf-node-database);
+}
+
+.sf-node--cache .sf-node__icon {
+  background: var(--sf-node-cache-soft);
+  color: var(--sf-node-cache);
+}
+
+.sf-node--api-gateway .sf-node__icon {
+  background: var(--sf-node-gateway-soft);
+  color: var(--sf-node-gateway);
 }
 
 /* ------------------------------------------------------------------ */
