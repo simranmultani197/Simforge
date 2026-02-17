@@ -1,4 +1,5 @@
 import type { SimforgeNodeType } from '../../types/flow';
+import { usePresetIO } from '../../hooks/usePresetIO';
 
 interface PaletteItem {
   type: SimforgeNodeType;
@@ -115,39 +116,59 @@ const ICON_STYLES: Record<string, React.CSSProperties> = {
 };
 
 export function ComponentPalette() {
+  const { importPresets, exportPresets } = usePresetIO();
+
   const onDragStart = (event: React.DragEvent, nodeType: SimforgeNodeType) => {
     event.dataTransfer.setData('application/simforge-node', nodeType);
     event.dataTransfer.effectAllowed = 'move';
   };
 
   return (
-    <div className="space-y-2" role="list" aria-label="Component palette">
-      {PALETTE_ITEMS.map((item) => (
-        <div
-          key={item.type}
-          className="sf-palette-item"
-          draggable
-          onDragStart={(e) => onDragStart(e, item.type)}
-          role="listitem"
-          aria-label={`Drag to add ${item.label}: ${item.description}`}
-          tabIndex={0}
+    <div className="space-y-2">
+      <div className="sf-palette-actions">
+        <button
+          type="button"
+          className="sf-btn sf-btn--secondary sf-btn--compact"
+          onClick={importPresets}
+          aria-label="Import presets file"
         >
+          Import Presets
+        </button>
+        <button
+          type="button"
+          className="sf-btn sf-btn--secondary sf-btn--compact"
+          onClick={exportPresets}
+          aria-label="Export custom presets file"
+        >
+          Export Presets
+        </button>
+      </div>
+
+      <div className="space-y-2" role="list" aria-label="Component palette">
+        {PALETTE_ITEMS.map((item) => (
           <div
-            className="sf-palette-item__icon"
-            style={ICON_STYLES[item.colorClass]}
+            key={item.type}
+            className="sf-palette-item"
+            draggable
+            onDragStart={(e) => onDragStart(e, item.type)}
+            role="listitem"
+            aria-label={`Drag to add ${item.label}: ${item.description}`}
+            tabIndex={0}
           >
-            {item.icon}
-          </div>
-          <div className="min-w-0">
-            <div className="text-sm font-semibold text-[var(--sf-text-primary)]">
-              {item.label}
+            <div className="sf-palette-item__icon" style={ICON_STYLES[item.colorClass]}>
+              {item.icon}
             </div>
-            <div className="text-[11px] text-[var(--sf-text-secondary)] leading-snug">
-              {item.description}
+            <div className="min-w-0">
+              <div className="text-sm font-semibold text-[var(--sf-text-primary)]">
+                {item.label}
+              </div>
+              <div className="text-[11px] text-[var(--sf-text-secondary)] leading-snug">
+                {item.description}
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }

@@ -485,6 +485,11 @@ body {
   border-color: var(--sf-text-muted);
 }
 
+.sf-btn--compact {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
 .sf-btn--success {
   background: var(--sf-success);
   color: white;
@@ -505,6 +510,12 @@ body {
   background: var(--sf-bg-primary);
   cursor: grab;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sf-palette-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
 .sf-palette-item:hover {

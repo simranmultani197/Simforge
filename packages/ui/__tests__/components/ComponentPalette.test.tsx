@@ -85,4 +85,11 @@ describe('ComponentPalette', () => {
     expect(items[4]!.getAttribute('aria-label')).toContain('Cache');
     expect(items[5]!.getAttribute('aria-label')).toContain('API Gateway');
   });
+
+  it('renders preset import/export actions', () => {
+    render(<ComponentPalette />);
+
+    expect(screen.getByRole('button', { name: 'Import presets file' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Export custom presets file' })).toBeDefined();
+  });
 });
