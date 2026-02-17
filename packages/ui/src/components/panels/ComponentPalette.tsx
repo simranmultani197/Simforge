@@ -1,5 +1,12 @@
 import type { SimforgeNodeType } from '../../types/flow';
 import { usePresetIO } from '../../hooks/usePresetIO';
+import { useTopologyStore } from '../../stores/topology-store';
+import { useSimulationStore } from '../../stores/simulation-store';
+import { useToast } from '../../hooks/useToast';
+import {
+  builtInTemplates,
+  type SimforgeTemplate,
+} from '../../data/templates';
 
 interface PaletteItem {
   type: SimforgeNodeType;
@@ -116,6 +123,9 @@ const ICON_STYLES: Record<string, React.CSSProperties> = {
 };
 
 export function ComponentPalette() {
+  const fromSimTopology = useTopologyStore((state) => state.fromSimTopology);
+  const updateConfig = useSimulationStore((state) => state.updateConfig);
+  const { toast } = useToast();
   const { importPresets, exportPresets } = usePresetIO();
 
   const onDragStart = (event: React.DragEvent, nodeType: SimforgeNodeType) => {
@@ -123,8 +133,34 @@ export function ComponentPalette() {
     event.dataTransfer.effectAllowed = 'move';
   };
 
+  const applyTemplate = (template: SimforgeTemplate) => {
+    fromSimTopology(template.topology);
+    if (template.config) {
+      updateConfig(template.config);
+    }
+    toast(`Loaded template: ${template.name}`, 'success');
+  };
+
   return (
     <div className="space-y-2">
+      <div className="sf-template-section">
+        <div className="sf-template-section__title">Quick Templates</div>
+        <div className="sf-template-grid">
+          {builtInTemplates.map((template) => (
+            <button
+              key={template.id}
+              type="button"
+              className="sf-template-card"
+              onClick={() => applyTemplate(template)}
+              aria-label={`Load template ${template.name}`}
+            >
+              <span className="sf-template-card__title">{template.name}</span>
+              <span className="sf-template-card__desc">{template.description}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="sf-palette-actions">
         <button
           type="button"

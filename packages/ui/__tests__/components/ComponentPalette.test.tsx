@@ -1,8 +1,29 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ComponentPalette } from '../../src/components/panels/ComponentPalette';
+import { useTopologyStore } from '../../src/stores/topology-store';
+import { useSimulationStore } from '../../src/stores/simulation-store';
 
 describe('ComponentPalette', () => {
+  beforeEach(() => {
+    useTopologyStore.setState({
+      nodes: [],
+      edges: [],
+      selectedNodeId: null,
+      selectedEdgeId: null,
+    });
+    useSimulationStore.setState((state) => ({
+      ...state,
+      config: {
+        seed: 42,
+        maxTimeMs: 10000,
+        maxEvents: 1_000_000,
+        requestRateRps: 100,
+        requestDistribution: 'constant',
+      },
+    }));
+  });
+
   it('renders all six component types', () => {
     render(<ComponentPalette />);
 
@@ -91,5 +112,27 @@ describe('ComponentPalette', () => {
 
     expect(screen.getByRole('button', { name: 'Import presets file' })).toBeDefined();
     expect(screen.getByRole('button', { name: 'Export custom presets file' })).toBeDefined();
+  });
+
+  it('renders built-in quick templates', () => {
+    render(<ComponentPalette />);
+
+    expect(screen.getByRole('button', { name: 'Load template Load-Balanced Services' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Load template Event-Driven Pipeline' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Load template Cached Read API' })).toBeDefined();
+  });
+
+  it('applies selected template to topology and simulation config', () => {
+    render(<ComponentPalette />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Load template Event-Driven Pipeline' }));
+
+    const topologyState = useTopologyStore.getState();
+    const simState = useSimulationStore.getState();
+
+    expect(topologyState.nodes.length).toBeGreaterThan(0);
+    expect(topologyState.edges.length).toBeGreaterThan(0);
+    expect(simState.config.requestDistribution).toBe('poisson');
+    expect(simState.config.requestRateRps).toBe(350);
   });
 });
