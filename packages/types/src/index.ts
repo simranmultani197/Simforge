@@ -4,6 +4,9 @@ export type {
   ServiceConfig,
   LoadBalancerConfig,
   QueueConfig,
+  DatabaseConfig,
+  CacheConfig,
+  ApiGatewayConfig,
 } from './components';
 
 export type { SimNode, SimEdge, SimTopology } from './topology';

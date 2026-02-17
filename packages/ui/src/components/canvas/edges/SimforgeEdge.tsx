@@ -6,6 +6,7 @@ import {
   type EdgeProps,
 } from '@xyflow/react';
 import type { SimforgeEdge as SimforgeEdgeType } from '../../../types/flow';
+import { useSimulationStore } from '../../../stores/simulation-store';
 
 function SimforgeEdgeComponent({
   id,
@@ -19,6 +20,8 @@ function SimforgeEdgeComponent({
   selected,
   style,
 }: EdgeProps<SimforgeEdgeType>) {
+  const isRunning = useSimulationStore((s) => s.status === 'running');
+
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
@@ -47,21 +50,21 @@ function SimforgeEdgeComponent({
     }
   }
 
+  // Animate edges while simulation is running
+  const edgeStyle: React.CSSProperties = {
+    ...style,
+    stroke: selected ? 'var(--sf-accent)' : isRunning ? 'var(--sf-accent)' : 'var(--sf-text-muted)',
+    strokeWidth: selected ? 2.5 : isRunning ? 2 : 1.5,
+    strokeDasharray: selected ? 'none' : '6 4',
+    strokeDashoffset: 0,
+    opacity: selected ? 1 : isRunning ? 0.8 : 0.6,
+    transition: 'stroke 0.2s ease, stroke-width 0.2s ease, opacity 0.2s ease',
+    ...(isRunning && !selected ? { animation: 'sf-flow-dash 0.6s linear infinite' } : {}),
+  };
+
   return (
     <>
-      <BaseEdge
-        id={id}
-        path={edgePath}
-        style={{
-          ...style,
-          stroke: selected ? 'var(--sf-accent)' : 'var(--sf-text-muted)',
-          strokeWidth: selected ? 2.5 : 1.5,
-          strokeDasharray: selected ? 'none' : '6 4',
-          strokeDashoffset: 0,
-          opacity: selected ? 1 : 0.6,
-          transition: 'stroke 0.2s ease, stroke-width 0.2s ease, opacity 0.2s ease',
-        }}
-      />
+      <BaseEdge id={id} path={edgePath} style={edgeStyle} />
       {latencyLabel && (
         <EdgeLabelRenderer>
           <div

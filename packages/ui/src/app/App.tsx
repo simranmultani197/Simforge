@@ -5,10 +5,13 @@ import { PropertiesPanel } from '../components/panels/PropertiesPanel';
 import { MetricsPanel } from '../components/panels/MetricsPanel';
 import { SimulationControls } from '../components/controls/SimulationControls';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
+import { ToastProvider } from '../components/common/ToastProvider';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { useAutoSave } from '../hooks/useAutoSave';
 
 function AppContent() {
   useKeyboardShortcuts();
+  useAutoSave();
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
@@ -72,9 +75,11 @@ function AppContent() {
 export default function App() {
   return (
     <ErrorBoundary fallbackTitle="Application error">
-      <Providers>
-        <AppContent />
-      </Providers>
+      <ToastProvider>
+        <Providers>
+          <AppContent />
+        </Providers>
+      </ToastProvider>
     </ErrorBoundary>
   );
 }

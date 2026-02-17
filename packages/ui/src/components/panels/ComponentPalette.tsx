@@ -74,13 +74,16 @@ export function ComponentPalette() {
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" role="list" aria-label="Component palette">
       {PALETTE_ITEMS.map((item) => (
         <div
           key={item.type}
           className="sf-palette-item"
           draggable
           onDragStart={(e) => onDragStart(e, item.type)}
+          role="listitem"
+          aria-label={`Drag to add ${item.label}: ${item.description}`}
+          tabIndex={0}
         >
           <div
             className="sf-palette-item__icon"

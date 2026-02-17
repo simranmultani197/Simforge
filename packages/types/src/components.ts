@@ -14,7 +14,10 @@ export type Distribution =
 export type ComponentConfig =
   | ServiceConfig
   | LoadBalancerConfig
-  | QueueConfig;
+  | QueueConfig
+  | DatabaseConfig
+  | CacheConfig
+  | ApiGatewayConfig;
 
 export interface ServiceConfig {
   kind: 'service';
@@ -35,4 +38,36 @@ export interface QueueConfig {
   maxDepth: number;
   processingTimeMs: Distribution;
   deadLetterEnabled: boolean;
+}
+
+export interface DatabaseConfig {
+  kind: 'database';
+  engine: 'postgres' | 'mysql' | 'dynamodb' | 'redis';
+  maxConnections: number;
+  queryLatencyMs: Distribution;
+  writeLatencyMs: Distribution;
+  failureRate: number;
+  connectionPoolSize: number;
+  replicationFactor: number;
+}
+
+export interface CacheConfig {
+  kind: 'cache';
+  evictionPolicy: 'lru' | 'lfu' | 'ttl';
+  maxSizeMb: number;
+  hitRate: number;
+  hitLatencyMs: Distribution;
+  missLatencyMs: Distribution;
+  ttlMs: number;
+  maxEntries: number;
+}
+
+export interface ApiGatewayConfig {
+  kind: 'api-gateway';
+  rateLimitRps: number;
+  burstSize: number;
+  authLatencyMs: Distribution;
+  routes: number;
+  failureRate: number;
+  maxConcurrentRequests: number;
 }

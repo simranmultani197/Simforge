@@ -61,7 +61,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --sf-bg-primary: #0f172a;
     --sf-bg-secondary: #1e293b;
     --sf-bg-tertiary: #334155;
@@ -88,6 +88,35 @@
     --sf-shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.4);
     --sf-shadow-glow-accent: 0 0 20px rgba(59, 130, 246, 0.25);
   }
+}
+
+/* Manual dark class — mirrors the media-query tokens */
+:root.dark {
+  --sf-bg-primary: #0f172a;
+  --sf-bg-secondary: #1e293b;
+  --sf-bg-tertiary: #334155;
+  --sf-bg-elevated: rgba(30, 41, 59, 0.9);
+
+  --sf-text-primary: #f8fafc;
+  --sf-text-secondary: #94a3b8;
+  --sf-text-muted: #64748b;
+
+  --sf-border: #334155;
+  --sf-border-subtle: #1e293b;
+
+  --sf-accent-soft: rgba(59, 130, 246, 0.15);
+  --sf-success-soft: rgba(34, 197, 94, 0.15);
+  --sf-warning-soft: rgba(245, 158, 11, 0.15);
+  --sf-error-soft: rgba(239, 68, 68, 0.15);
+
+  --sf-node-service-soft: rgba(59, 130, 246, 0.12);
+  --sf-node-lb-soft: rgba(139, 92, 246, 0.12);
+  --sf-node-queue-soft: rgba(245, 158, 11, 0.12);
+
+  --sf-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --sf-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --sf-shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.4);
+  --sf-shadow-glow-accent: 0 0 20px rgba(59, 130, 246, 0.25);
 }
 
 /* ------------------------------------------------------------------ */
@@ -205,6 +234,33 @@ body {
 .sf-node.selected {
   box-shadow: var(--sf-shadow-md);
   transform: translateY(-1px);
+}
+
+/* Node simulation state visuals */
+.sf-node--processing {
+  animation: sf-processing-pulse 1.5s ease-in-out infinite;
+}
+
+.sf-node--overloaded {
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+  border-color: var(--sf-warning) !important;
+}
+
+.sf-node--failed {
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+  border-color: var(--sf-error) !important;
+  animation: sf-shake 0.4s ease-in-out;
+}
+
+@keyframes sf-processing-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+  50% { box-shadow: 0 0 8px 2px rgba(59, 130, 246, 0.25); }
+}
+
+@keyframes sf-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
 }
 
 /* Left accent bar */
@@ -672,6 +728,68 @@ body {
 
 .sf-metrics-panel .recharts-legend-item-text {
   color: var(--sf-text-secondary) !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Toasts                                                              */
+/* ------------------------------------------------------------------ */
+
+.sf-toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: var(--sf-radius-md);
+  background: var(--sf-bg-elevated);
+  border: 1px solid var(--sf-border);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--sf-shadow-md);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--sf-text-primary);
+  cursor: pointer;
+  min-width: 200px;
+  max-width: 360px;
+  animation: sf-toast-in 0.25s ease-out;
+}
+
+.sf-toast__icon {
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.sf-toast--success .sf-toast__icon {
+  background: var(--sf-success-soft);
+  color: var(--sf-success);
+}
+
+.sf-toast--error .sf-toast__icon {
+  background: var(--sf-error-soft);
+  color: var(--sf-error);
+}
+
+.sf-toast--info .sf-toast__icon {
+  background: var(--sf-accent-soft);
+  color: var(--sf-accent);
+}
+
+@keyframes sf-toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* Respect reduced motion */

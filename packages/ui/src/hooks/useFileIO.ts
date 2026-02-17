@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useTopologyStore } from '../stores/topology-store';
 import { useSimulationStore } from '../stores/simulation-store';
+import { useToast } from './useToast';
 import type { SimTopology, SimulationConfig } from '@simforge/types';
 
 /**
@@ -20,6 +21,7 @@ export function useFileIO() {
     const fromSimTopology = useTopologyStore((s) => s.fromSimTopology);
     const config = useSimulationStore((s) => s.config);
     const updateConfig = useSimulationStore((s) => s.updateConfig);
+    const { toast } = useToast();
 
     /** Download the current topology + config as a .simforge.json file */
     const saveDesign = useCallback(() => {
@@ -40,7 +42,9 @@ export function useFileIO() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-    }, [toSimTopology, config]);
+
+        toast('Design saved!', 'success');
+    }, [toSimTopology, config, toast]);
 
     /** Open a file picker and load a .simforge.json file */
     const loadDesign = useCallback(() => {
@@ -62,13 +66,17 @@ export function useFileIO() {
 
                 fromSimTopology(parsed.topology);
                 updateConfig(parsed.config);
+                toast(`Loaded "${file.name}"`, 'success');
             } catch (err) {
                 console.error('[Simforge] Failed to load design:', err);
-                alert(`Failed to load design file: ${err instanceof Error ? err.message : 'Unknown error'}`);
+                toast(
+                    `Failed to load: ${err instanceof Error ? err.message : 'Unknown error'}`,
+                    'error',
+                );
             }
         };
         input.click();
-    }, [fromSimTopology, updateConfig]);
+    }, [fromSimTopology, updateConfig, toast]);
 
     return { saveDesign, loadDesign };
 }

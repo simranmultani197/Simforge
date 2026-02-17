@@ -2,6 +2,7 @@ import { useSimulationWorker } from '../../hooks/useSimulationWorker';
 import { useSimulationStore } from '../../stores/simulation-store';
 import { useUiStore } from '../../stores/ui-store';
 import { useFileIO } from '../../hooks/useFileIO';
+import { ThemeToggle } from '../common/ThemeToggle';
 
 export function SimulationControls() {
   const { status, start, pause, step, reset, completionInfo, errorMessage } =
@@ -18,7 +19,7 @@ export function SimulationControls() {
   const isIdle = status === 'idle';
 
   return (
-    <div className="sf-controls-bar">
+    <div className="sf-controls-bar" role="toolbar" aria-label="Simulation controls">
       {/* Brand */}
       <span className="sf-brand" style={{ marginRight: 8 }}>Simforge</span>
 
@@ -29,6 +30,7 @@ export function SimulationControls() {
         onClick={isRunning ? pause : start}
         disabled={isCompleted}
         className={`sf-btn ${isRunning ? 'sf-btn--secondary' : 'sf-btn--primary'}`}
+        aria-label={isRunning ? 'Pause simulation' : 'Start simulation'}
       >
         {isRunning ? '⏸ Pause' : '▶ Play'}
       </button>
@@ -38,6 +40,7 @@ export function SimulationControls() {
         onClick={step}
         disabled={isRunning}
         className="sf-btn sf-btn--secondary"
+        aria-label="Step simulation forward by one event"
       >
         ⏭ Step
       </button>
@@ -47,6 +50,7 @@ export function SimulationControls() {
         onClick={reset}
         disabled={isIdle}
         className="sf-btn sf-btn--secondary"
+        aria-label="Reset simulation"
       >
         ↺ Reset
       </button>
@@ -55,8 +59,8 @@ export function SimulationControls() {
       <span style={{ margin: '0 4px', height: 20, width: 1, background: 'var(--sf-border)' }} />
 
       {/* Status indicator */}
-      <div className={`sf-status sf-status--${status}`}>
-        <span className="sf-status__dot" />
+      <div className={`sf-status sf-status--${status}`} role="status" aria-live="assertive" aria-label={`Simulation status: ${status}`}>
+        <span className="sf-status__dot" aria-hidden="true" />
         <span>{status}</span>
       </div>
 
@@ -75,8 +79,10 @@ export function SimulationControls() {
         onClick={toggleMetrics}
         className={`sf-btn ${metricsOpen ? 'sf-btn--primary' : 'sf-btn--secondary'}`}
         title="Toggle metrics panel"
+        aria-label={metricsOpen ? 'Hide metrics panel' : 'Show metrics panel'}
+        aria-pressed={metricsOpen}
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <line x1="18" y1="20" x2="18" y2="10" />
           <line x1="12" y1="20" x2="12" y2="4" />
           <line x1="6" y1="20" x2="6" y2="14" />
@@ -92,8 +98,9 @@ export function SimulationControls() {
         onClick={saveDesign}
         className="sf-btn sf-btn--secondary"
         title="Save design (Cmd+S)"
+        aria-label="Save design file"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
           <polyline points="17 21 17 13 7 13 7 21" />
           <polyline points="7 3 7 8 15 8" />
@@ -105,8 +112,9 @@ export function SimulationControls() {
         onClick={loadDesign}
         className="sf-btn sf-btn--secondary"
         title="Load design (Cmd+O)"
+        aria-label="Load design file"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
         </svg>
         Load
@@ -173,6 +181,12 @@ export function SimulationControls() {
           ✕ {errorMessage}
         </span>
       )}
+
+      {/* Divider */}
+      <span style={{ margin: '0 4px', height: 20, width: 1, background: 'var(--sf-border)' }} />
+
+      {/* Theme toggle */}
+      <ThemeToggle />
     </div>
   );
 }

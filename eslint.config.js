@@ -13,6 +13,8 @@ export default tseslint.config(
       ],
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/no-non-null-assertion': 'warn',
+      // Disabled: crashes with TS 5.9 + typescript-eslint 8.x (reading 'isolatedDeclarations')
+      '@typescript-eslint/consistent-generic-constructors': 'off',
     },
   },
   {

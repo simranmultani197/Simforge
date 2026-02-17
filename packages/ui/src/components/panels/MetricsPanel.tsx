@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import {
     AreaChart,
     Area,
@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import { useSimulationStore } from '../../stores/simulation-store';
 import { useUiStore } from '../../stores/ui-store';
+import { EventLog } from './EventLog';
 
 /* ------------------------------------------------------------------ */
 /* Chart colour tokens                                                  */
@@ -36,6 +37,12 @@ const TOOLTIP_STYLE: React.CSSProperties = {
     fontFamily: 'Inter, sans-serif',
     backdropFilter: 'blur(12px)',
 };
+
+/* ------------------------------------------------------------------ */
+/* Tabs                                                                */
+/* ------------------------------------------------------------------ */
+
+type Tab = 'charts' | 'events';
 
 /* ------------------------------------------------------------------ */
 /* Summary Cards                                                       */
@@ -85,7 +92,7 @@ function SummaryCards() {
     ];
 
     return (
-        <div style={{ display: 'flex', gap: 12, padding: '12px 16px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 12, padding: '12px 16px', flexWrap: 'wrap' }} role="group" aria-label="Simulation summary metrics">
             {cards.map((c) => (
                 <div
                     key={c.label}
@@ -97,6 +104,8 @@ function SummaryCards() {
                         border: '1px solid var(--sf-border)',
                         background: 'var(--sf-bg-primary)',
                     }}
+                    role="meter"
+                    aria-label={`${c.label}: ${c.value}`}
                 >
                     <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--sf-text-muted)', marginBottom: 4 }}>
                         {c.label}
@@ -230,6 +239,31 @@ function useFormattedSamples() {
 }
 
 /* ------------------------------------------------------------------ */
+/* CSV Export                                                           */
+/* ------------------------------------------------------------------ */
+
+function useExportCsv() {
+    const samples = useSimulationStore((s) => s.samples);
+    return useCallback(() => {
+        if (samples.length === 0) return;
+        const headers = ['time', 'throughputRps', 'latencyP50', 'latencyP95', 'latencyP99', 'completedRequests', 'droppedRequests', 'activeConnections'];
+        const rows = samples.map((s) =>
+            headers.map((h) => (s as unknown as Record<string, unknown>)[h] ?? '').join(',')
+        );
+        const csv = [headers.join(','), ...rows].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'metrics.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }, [samples]);
+}
+
+/* ------------------------------------------------------------------ */
 /* MetricsPanel (exported)                                             */
 /* ------------------------------------------------------------------ */
 
@@ -237,25 +271,74 @@ export function MetricsPanel() {
     const metricsOpen = useUiStore((s) => s.metricsOpen);
     const samples = useSimulationStore((s) => s.samples);
     const data = useFormattedSamples();
+    const exportCsv = useExportCsv();
+    const [tab, setTab] = useState<Tab>('charts');
 
     if (!metricsOpen) return null;
 
     return (
-        <div className="sf-metrics-panel sf-animate-slide-in">
+        <div className="sf-metrics-panel sf-animate-slide-in" role="region" aria-label="Simulation metrics" aria-live="polite">
+            {/* Tab bar + export button */}
+            <div style={{ display: 'flex', alignItems: 'center', padding: '6px 16px 0', gap: 4 }} role="tablist" aria-label="Metrics view">
+                <button
+                    className={`sf-btn ${tab === 'charts' ? 'sf-btn--primary' : 'sf-btn--secondary'}`}
+                    onClick={() => setTab('charts')}
+                    style={{ fontSize: 11, padding: '3px 10px' }}
+                    role="tab"
+                    aria-selected={tab === 'charts'}
+                    aria-controls="metrics-tabpanel"
+                >
+                    Charts
+                </button>
+                <button
+                    className={`sf-btn ${tab === 'events' ? 'sf-btn--primary' : 'sf-btn--secondary'}`}
+                    onClick={() => setTab('events')}
+                    style={{ fontSize: 11, padding: '3px 10px' }}
+                    role="tab"
+                    aria-selected={tab === 'events'}
+                    aria-controls="metrics-tabpanel"
+                >
+                    Event Log
+                </button>
+                <div style={{ flex: 1 }} />
+                {tab === 'charts' && samples.length > 0 && (
+                    <button
+                        className="sf-btn sf-btn--secondary"
+                        onClick={exportCsv}
+                        title="Export metrics as CSV"
+                        aria-label="Export metrics data as CSV file"
+                        style={{ fontSize: 11, padding: '3px 10px' }}
+                    >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                        Export CSV
+                    </button>
+                )}
+            </div>
+
             {/* Summary cards */}
             <SummaryCards />
 
-            {samples.length === 0 ? (
-                <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--sf-text-muted)', fontSize: 13 }}>
-                    Run a simulation to see metrics here.
-                </div>
+            <div id="metrics-tabpanel" role="tabpanel" aria-label={tab === 'charts' ? 'Charts view' : 'Event log view'}>
+            {tab === 'charts' ? (
+                samples.length === 0 ? (
+                    <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--sf-text-muted)', fontSize: 13 }}>
+                        Run a simulation to see metrics here.
+                    </div>
+                ) : (
+                    <div style={{ display: 'flex', gap: 8, padding: '0 12px 12px', flexWrap: 'wrap' }}>
+                        <ThroughputChart data={data} />
+                        <LatencyChart data={data} />
+                        <QueueDepthsChart data={data} />
+                    </div>
+                )
             ) : (
-                <div style={{ display: 'flex', gap: 8, padding: '0 12px 12px', flexWrap: 'wrap' }}>
-                    <ThroughputChart data={data} />
-                    <LatencyChart data={data} />
-                    <QueueDepthsChart data={data} />
-                </div>
+                <EventLog />
             )}
+            </div>
         </div>
     );
 }

@@ -10,20 +10,23 @@ import type {
 // Node data types — carry ComponentConfig + UI metadata
 // ---------------------------------------------------------------------------
 
-export type ServiceNodeData = {
+export interface ServiceNodeData {
   label: string;
   config: ServiceConfig;
-};
+  [key: string]: unknown;
+}
 
-export type LoadBalancerNodeData = {
+export interface LoadBalancerNodeData {
   label: string;
   config: LoadBalancerConfig;
-};
+  [key: string]: unknown;
+}
 
-export type QueueNodeData = {
+export interface QueueNodeData {
   label: string;
   config: QueueConfig;
-};
+  [key: string]: unknown;
+}
 
 // ---------------------------------------------------------------------------
 // Discriminated React Flow node union
@@ -39,11 +42,12 @@ export type SimforgeNode = ServiceFlowNode | LoadBalancerFlowNode | QueueFlowNod
 // Edge data — mirrors SimEdge.config
 // ---------------------------------------------------------------------------
 
-export type SimforgeEdgeData = {
+export interface SimforgeEdgeData {
   latencyMs: Distribution;
   bandwidthMbps: number;
   failureRate: number;
-};
+  [key: string]: unknown;
+}
 
 export type SimforgeEdge = Edge<SimforgeEdgeData, 'simforge'>;
 

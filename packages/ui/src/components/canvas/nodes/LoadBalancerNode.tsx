@@ -1,19 +1,28 @@
 import { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { LoadBalancerFlowNode } from '../../../types/flow';
+import { useSimulationStore } from '../../../stores/simulation-store';
 
-function LoadBalancerNodeComponent({ data, selected }: NodeProps<LoadBalancerFlowNode>) {
+function LoadBalancerNodeComponent({ id, data, selected }: NodeProps<LoadBalancerFlowNode>) {
+  const visualState = useSimulationStore((s) => s.nodeVisualStates[id]);
+  const stateClass = visualState ? `sf-node--${visualState}` : '';
+
   return (
-    <div className={`sf-node sf-node--lb ${selected ? 'selected' : ''}`}>
+    <div
+      className={`sf-node sf-node--lb ${selected ? 'selected' : ''} ${stateClass}`}
+      role="group"
+      aria-label={`Load Balancer: ${data.label}`}
+    >
       <Handle
         type="target"
         position={Position.Top}
         style={{ background: 'var(--sf-node-lb)' }}
+        aria-label="Input connection"
       />
 
       <div className="flex items-center gap-3">
         <div className="sf-node__icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <line x1="12" y1="2" x2="12" y2="6" />
             <line x1="12" y1="18" x2="12" y2="22" />
             <circle cx="12" cy="12" r="4" />
@@ -39,6 +48,7 @@ function LoadBalancerNodeComponent({ data, selected }: NodeProps<LoadBalancerFlo
         type="source"
         position={Position.Bottom}
         style={{ background: 'var(--sf-node-lb)' }}
+        aria-label="Output connection"
       />
     </div>
   );

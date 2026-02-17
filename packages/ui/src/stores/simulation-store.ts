@@ -6,14 +6,24 @@ import type {
   SimTopology,
 } from '@simforge/types';
 
+// Lightweight event shape for the event log (mirrors SimEvent from @simforge/types)
+export interface LogEvent {
+  time: number;
+  type: string;
+  nodeId: string;
+}
+
 // We define the WorkerEvent type inline to avoid importing from engine internals.
 // This mirrors the protocol in packages/engine/src/worker/protocol.ts.
 type WorkerEvent =
   | { type: 'status'; status: SimulationStatus }
-  | { type: 'events'; events: unknown[] }
+  | { type: 'events'; events: LogEvent[] }
   | { type: 'metrics'; sample: MetricsSample }
   | { type: 'error'; message: string; stack?: string }
   | { type: 'complete'; eventsProcessed: number; simulationTime: number };
+
+/** Per-node visual state derived from simulation metrics. */
+export type NodeVisualState = 'idle' | 'processing' | 'overloaded' | 'failed';
 
 interface SimulationState {
   // Status
@@ -27,6 +37,12 @@ interface SimulationState {
   latestSample: MetricsSample | null;
   samples: MetricsSample[];
   completionInfo: { eventsProcessed: number; simulationTime: number } | null;
+
+  // Per-node visual states derived from metrics
+  nodeVisualStates: Record<string, NodeVisualState>;
+
+  // Event log
+  recentEvents: LogEvent[];
 
   // Worker reference
   worker: Worker | null;
@@ -48,6 +64,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
   // Initial state
   status: 'idle',
   errorMessage: null,
+  recentEvents: [],
   config: {
     seed: 42,
     maxTimeMs: 10000,
@@ -58,6 +75,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
   latestSample: null,
   samples: [],
   completionInfo: null,
+  nodeVisualStates: {},
   worker: null,
 
   // ---- Worker lifecycle ----
@@ -122,6 +140,8 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
       latestSample: null,
       samples: [],
       completionInfo: null,
+      recentEvents: [],
+      nodeVisualStates: {},
     });
   },
 
@@ -136,12 +156,38 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
       case 'status':
         set({ status: event.status });
         break;
-      case 'metrics':
+      case 'metrics': {
+        // Derive per-node visual states from active connections
+        const nodeStates: Record<string, NodeVisualState> = {};
+        if (event.sample.activeConnections) {
+          for (const [nodeId, active] of Object.entries(event.sample.activeConnections)) {
+            if (active === 0) {
+              nodeStates[nodeId] = 'idle';
+            } else if (active > 80) {
+              nodeStates[nodeId] = 'overloaded';
+            } else {
+              nodeStates[nodeId] = 'processing';
+            }
+          }
+        }
+        if (event.sample.queueDepths) {
+          for (const [nodeId, depth] of Object.entries(event.sample.queueDepths)) {
+            if (depth === 0) {
+              nodeStates[nodeId] = 'idle';
+            } else if (depth > 800) {
+              nodeStates[nodeId] = 'overloaded';
+            } else {
+              nodeStates[nodeId] = 'processing';
+            }
+          }
+        }
         set((s) => ({
           latestSample: event.sample,
           samples: [...s.samples, event.sample],
+          nodeVisualStates: nodeStates,
         }));
         break;
+      }
       case 'error':
         set({ errorMessage: event.message, status: 'error' });
         break;
@@ -153,9 +199,13 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
           },
         });
         break;
-      case 'events':
-        // Phase 3: visualize individual events
+      case 'events': {
+        const incoming = event.events.map((e) => ({ time: e.time, type: e.type, nodeId: e.nodeId }));
+        set((s) => ({
+          recentEvents: [...s.recentEvents, ...incoming].slice(-500),
+        }));
         break;
+      }
     }
   },
 }));
