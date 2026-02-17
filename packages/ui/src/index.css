@@ -267,6 +267,20 @@ body {
   animation: sf-shake 0.4s ease-in-out;
 }
 
+.sf-node--chaos::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: calc(var(--sf-radius) - 3px);
+  border: 1px dashed color-mix(in srgb, var(--sf-error) 70%, transparent);
+  pointer-events: none;
+}
+
+.sf-node--cascade {
+  border-color: color-mix(in srgb, var(--sf-warning) 70%, var(--sf-border)) !important;
+  animation: sf-cascade-glow 1.8s ease-in-out infinite;
+}
+
 @keyframes sf-processing-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
   50% { box-shadow: 0 0 8px 2px rgba(59, 130, 246, 0.25); }
@@ -276,6 +290,11 @@ body {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-2px); }
   75% { transform: translateX(2px); }
+}
+
+@keyframes sf-cascade-glow {
+  0%, 100% { box-shadow: var(--sf-shadow-sm); }
+  50% { box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.18), var(--sf-shadow-md); }
 }
 
 /* Left accent bar */
@@ -665,6 +684,46 @@ body {
 .sf-input:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------------ */
+/* Context Menus                                                       */
+/* ------------------------------------------------------------------ */
+
+.sf-context-menu {
+  position: fixed;
+  z-index: 30;
+  min-width: 180px;
+  padding: 6px;
+  border-radius: var(--sf-radius-sm);
+  border: 1px solid var(--sf-border);
+  background: var(--sf-bg-elevated);
+  backdrop-filter: blur(var(--sf-glass-blur));
+  box-shadow: var(--sf-shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sf-context-menu__item {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--sf-text-primary);
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sf-context-menu__item:hover {
+  background: var(--sf-bg-tertiary);
+}
+
+.sf-context-menu__item.active {
+  border-color: color-mix(in srgb, var(--sf-warning) 35%, var(--sf-border));
+  background: color-mix(in srgb, var(--sf-warning-soft) 50%, transparent);
 }
 
 .sf-label {

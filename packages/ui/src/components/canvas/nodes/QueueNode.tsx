@@ -1,11 +1,10 @@
 import { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { QueueFlowNode } from '../../../types/flow';
-import { useSimulationStore } from '../../../stores/simulation-store';
+import { useNodeVisualClasses } from './useNodeVisualClasses';
 
 function QueueNodeComponent({ id, data, selected }: NodeProps<QueueFlowNode>) {
-  const visualState = useSimulationStore((s) => s.nodeVisualStates[id]);
-  const stateClass = visualState ? `sf-node--${visualState}` : '';
+  const stateClass = useNodeVisualClasses(id);
 
   return (
     <div

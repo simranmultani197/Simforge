@@ -1,11 +1,10 @@
 import { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { ServiceFlowNode } from '../../../types/flow';
-import { useSimulationStore } from '../../../stores/simulation-store';
+import { useNodeVisualClasses } from './useNodeVisualClasses';
 
 function ServiceNodeComponent({ id, data, selected }: NodeProps<ServiceFlowNode>) {
-  const visualState = useSimulationStore((s) => s.nodeVisualStates[id]);
-  const stateClass = visualState ? `sf-node--${visualState}` : '';
+  const stateClass = useNodeVisualClasses(id);
 
   return (
     <div

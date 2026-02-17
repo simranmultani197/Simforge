@@ -1,11 +1,10 @@
 import { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { DatabaseFlowNode } from '../../../types/flow';
-import { useSimulationStore } from '../../../stores/simulation-store';
+import { useNodeVisualClasses } from './useNodeVisualClasses';
 
 function DatabaseNodeComponent({ id, data, selected }: NodeProps<DatabaseFlowNode>) {
-  const visualState = useSimulationStore((s) => s.nodeVisualStates[id]);
-  const stateClass = visualState ? `sf-node--${visualState}` : '';
+  const stateClass = useNodeVisualClasses(id);
 
   return (
     <div

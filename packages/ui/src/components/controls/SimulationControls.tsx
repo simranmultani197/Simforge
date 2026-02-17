@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import { useSimulationWorker } from '../../hooks/useSimulationWorker';
 import { useSimulationStore } from '../../stores/simulation-store';
 import { useUiStore } from '../../stores/ui-store';
 import { useFileIO } from '../../hooks/useFileIO';
 import { useShareableUrl } from '../../hooks/useShareableUrl';
+import { useTopologyStore } from '../../stores/topology-store';
+import { useChaosStore, type ChaosPreset } from '../../stores/chaos-store';
 import { ThemeToggle } from '../common/ThemeToggle';
 
 export function SimulationControls() {
@@ -13,12 +16,21 @@ export function SimulationControls() {
   const latestSample = useSimulationStore((s) => s.latestSample);
   const toggleMetrics = useUiStore((s) => s.toggleMetrics);
   const metricsOpen = useUiStore((s) => s.metricsOpen);
+  const toSimTopology = useTopologyStore((s) => s.toSimTopology);
+  const applyChaosPreset = useChaosStore((s) => s.applyPreset);
+  const clearAllChaosFaults = useChaosStore((s) => s.clearAllFaults);
+  const nodeFaultCount = useChaosStore((s) => Object.keys(s.nodeFaults).length);
+  const partitionedEdgeCount = useChaosStore((s) => s.partitionedEdgeIds.length);
+  const cascadeNodeCount = useChaosStore((s) => s.cascadeNodeIds.length);
   const { saveDesign, loadDesign } = useFileIO();
   const { copyShareUrl, copyEmbedCode } = useShareableUrl({ autoLoad: false });
+  const [selectedChaosPreset, setSelectedChaosPreset] =
+    useState<ChaosPreset>('region-failure');
 
   const isRunning = status === 'running';
   const isCompleted = status === 'completed';
   const isIdle = status === 'idle';
+  const activeChaosCount = nodeFaultCount + partitionedEdgeCount;
 
   return (
     <div className="sf-controls-bar" role="toolbar" aria-label="Simulation controls">
@@ -91,6 +103,49 @@ export function SimulationControls() {
         </svg>
         Metrics
       </button>
+
+      {/* Divider */}
+      <span style={{ margin: '0 4px', height: 20, width: 1, background: 'var(--sf-border)' }} />
+
+      <label style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <span className="sf-label__text" style={{ margin: 0 }}>Chaos</span>
+        <select
+          value={selectedChaosPreset}
+          onChange={(e) => setSelectedChaosPreset(e.target.value as ChaosPreset)}
+          className="sf-input"
+          style={{ width: 148 }}
+          aria-label="Chaos preset"
+        >
+          <option value="region-failure">Region failure</option>
+          <option value="database-failover">Database failover</option>
+          <option value="gateway-brownout">Gateway brownout</option>
+        </select>
+      </label>
+
+      <button
+        onClick={() => applyChaosPreset(selectedChaosPreset, toSimTopology())}
+        className="sf-btn sf-btn--secondary"
+        aria-label="Apply chaos preset"
+      >
+        Apply Fault
+      </button>
+
+      <button
+        onClick={clearAllChaosFaults}
+        className="sf-btn sf-btn--secondary"
+        disabled={activeChaosCount === 0}
+        aria-label="Clear all chaos faults"
+      >
+        Clear Faults
+      </button>
+
+      {activeChaosCount > 0 && (
+        <span style={{ fontSize: 11, color: 'var(--sf-warning)', fontWeight: 600 }}>
+          {nodeFaultCount} node fault{nodeFaultCount === 1 ? '' : 's'} ·{' '}
+          {partitionedEdgeCount} partition{partitionedEdgeCount === 1 ? '' : 's'} ·{' '}
+          {cascadeNodeCount} cascade
+        </span>
+      )}
 
       {/* Divider */}
       <span style={{ margin: '0 4px', height: 20, width: 1, background: 'var(--sf-border)' }} />

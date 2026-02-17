@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ReactFlow,
   Background,
@@ -10,6 +10,7 @@ import {
 } from '@xyflow/react';
 
 import { useTopologyStore } from '../../stores/topology-store';
+import { useChaosStore } from '../../stores/chaos-store';
 import { nodeTypes } from './nodes';
 import { edgeTypes } from './edges';
 import type { SimforgeNodeType, SimforgeNode, SimforgeEdge } from '../../types/flow';
@@ -59,6 +60,18 @@ interface SimforgeCanvasProps {
   showMiniMap?: boolean;
 }
 
+interface NodeContextMenuState {
+  nodeId: string;
+  x: number;
+  y: number;
+}
+
+interface EdgeContextMenuState {
+  edgeId: string;
+  x: number;
+  y: number;
+}
+
 export function SimforgeCanvas({
   readOnly = false,
   emptyTitle = 'Design your system',
@@ -67,6 +80,8 @@ export function SimforgeCanvas({
   showMiniMap = true,
 }: SimforgeCanvasProps = {}) {
   const { screenToFlowPosition } = useReactFlow();
+  const [nodeContextMenu, setNodeContextMenu] = useState<NodeContextMenuState | null>(null);
+  const [edgeContextMenu, setEdgeContextMenu] = useState<EdgeContextMenuState | null>(null);
 
   // Zustand selectors — subscribe to individual slices for performance
   const nodes = useTopologyStore((s) => s.nodes);
@@ -75,8 +90,37 @@ export function SimforgeCanvas({
   const onEdgesChange = useTopologyStore((s) => s.onEdgesChange);
   const onConnect = useTopologyStore((s) => s.onConnect);
   const addNode = useTopologyStore((s) => s.addNode);
+  const toSimTopology = useTopologyStore((s) => s.toSimTopology);
   const setSelectedNode = useTopologyStore((s) => s.setSelectedNode);
   const setSelectedEdge = useTopologyStore((s) => s.setSelectedEdge);
+  const setNodeFault = useChaosStore((s) => s.setNodeFault);
+  const clearNodeFault = useChaosStore((s) => s.clearNodeFault);
+  const togglePartitionEdge = useChaosStore((s) => s.togglePartitionEdge);
+  const nodeFaults = useChaosStore((s) => s.nodeFaults);
+  const partitionedEdgeIds = useChaosStore((s) => s.partitionedEdgeIds);
+
+  const closeContextMenus = useCallback(() => {
+    setNodeContextMenu(null);
+    setEdgeContextMenu(null);
+  }, []);
+
+  useEffect(() => {
+    if (!nodeContextMenu && !edgeContextMenu) return;
+
+    const onWindowClick = () => closeContextMenus();
+    const onWindowEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        closeContextMenus();
+      }
+    };
+
+    window.addEventListener('click', onWindowClick);
+    window.addEventListener('keydown', onWindowEscape);
+    return () => {
+      window.removeEventListener('click', onWindowClick);
+      window.removeEventListener('keydown', onWindowEscape);
+    };
+  }, [nodeContextMenu, edgeContextMenu, closeContextMenus]);
 
   // Drag-and-drop from palette
   const onDragOver = useCallback((event: React.DragEvent) => {
@@ -119,26 +163,71 @@ export function SimforgeCanvas({
   // Selection handlers
   const onNodeClick = useCallback(
     (_: React.MouseEvent, node: SimforgeNode) => {
+      closeContextMenus();
       setSelectedNode(node.id);
       setSelectedEdge(null);
     },
-    [setSelectedNode, setSelectedEdge],
+    [closeContextMenus, setSelectedNode, setSelectedEdge],
   );
 
   const onEdgeClick = useCallback(
     (_: React.MouseEvent, edge: SimforgeEdge) => {
+      closeContextMenus();
       setSelectedEdge(edge.id);
       setSelectedNode(null);
     },
-    [setSelectedEdge, setSelectedNode],
+    [closeContextMenus, setSelectedEdge, setSelectedNode],
+  );
+
+  const onNodeContextMenu = useCallback(
+    (event: React.MouseEvent, node: SimforgeNode) => {
+      if (readOnly) return;
+      event.preventDefault();
+      event.stopPropagation();
+
+      setSelectedNode(node.id);
+      setSelectedEdge(null);
+      setEdgeContextMenu(null);
+      setNodeContextMenu({
+        nodeId: node.id,
+        x: event.clientX,
+        y: event.clientY,
+      });
+    },
+    [readOnly, setSelectedNode, setSelectedEdge],
+  );
+
+  const onEdgeContextMenu = useCallback(
+    (event: React.MouseEvent, edge: SimforgeEdge) => {
+      if (readOnly) return;
+      event.preventDefault();
+      event.stopPropagation();
+
+      setSelectedEdge(edge.id);
+      setSelectedNode(null);
+      setNodeContextMenu(null);
+      setEdgeContextMenu({
+        edgeId: edge.id,
+        x: event.clientX,
+        y: event.clientY,
+      });
+    },
+    [readOnly, setSelectedEdge, setSelectedNode],
   );
 
   const onPaneClick = useCallback(() => {
     setSelectedNode(null);
     setSelectedEdge(null);
-  }, [setSelectedNode, setSelectedEdge]);
+    closeContextMenus();
+  }, [setSelectedNode, setSelectedEdge, closeContextMenus]);
 
   const isEmpty = nodes.length === 0;
+  const currentNodeFault = nodeContextMenu
+    ? nodeFaults[nodeContextMenu.nodeId]
+    : undefined;
+  const isEdgePartitioned = edgeContextMenu
+    ? partitionedEdgeIds.includes(edgeContextMenu.edgeId)
+    : false;
 
   return (
     <div className="h-full w-full relative">
@@ -162,6 +251,8 @@ export function SimforgeCanvas({
         onDrop={readOnly ? undefined : onDrop}
         onNodeClick={readOnly ? undefined : onNodeClick}
         onEdgeClick={readOnly ? undefined : onEdgeClick}
+        onNodeContextMenu={readOnly ? undefined : onNodeContextMenu}
+        onEdgeContextMenu={readOnly ? undefined : onEdgeContextMenu}
         onPaneClick={readOnly ? undefined : onPaneClick}
         nodesDraggable={!readOnly}
         nodesConnectable={!readOnly}
@@ -179,6 +270,80 @@ export function SimforgeCanvas({
           />
         )}
       </ReactFlow>
+
+      {!readOnly && nodeContextMenu && (
+        <div
+          className="sf-context-menu"
+          style={{ left: nodeContextMenu.x, top: nodeContextMenu.y }}
+          role="menu"
+          aria-label="Node chaos fault menu"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <button
+            className={`sf-context-menu__item ${currentNodeFault?.kill ? 'active' : ''}`}
+            onClick={() =>
+              setNodeFault(
+                nodeContextMenu.nodeId,
+                { kill: !currentNodeFault?.kill },
+                toSimTopology(),
+              )
+            }
+          >
+            {currentNodeFault?.kill ? 'Disable kill fault' : 'Kill node'}
+          </button>
+          <button
+            className={`sf-context-menu__item ${currentNodeFault?.latencySpikeFactor ? 'active' : ''}`}
+            onClick={() =>
+              setNodeFault(
+                nodeContextMenu.nodeId,
+                {
+                  latencySpikeFactor: currentNodeFault?.latencySpikeFactor
+                    ? undefined
+                    : 8,
+                },
+                toSimTopology(),
+              )
+            }
+          >
+            {currentNodeFault?.latencySpikeFactor ? 'Disable latency spike' : 'Spike latency x8'}
+          </button>
+          <button
+            className={`sf-context-menu__item ${currentNodeFault?.dropPackets ? 'active' : ''}`}
+            onClick={() =>
+              setNodeFault(
+                nodeContextMenu.nodeId,
+                { dropPackets: !currentNodeFault?.dropPackets },
+                toSimTopology(),
+              )
+            }
+          >
+            {currentNodeFault?.dropPackets ? 'Disable packet drop' : 'Drop packets'}
+          </button>
+          <button
+            className="sf-context-menu__item"
+            onClick={() => clearNodeFault(nodeContextMenu.nodeId, toSimTopology())}
+          >
+            Clear node faults
+          </button>
+        </div>
+      )}
+
+      {!readOnly && edgeContextMenu && (
+        <div
+          className="sf-context-menu"
+          style={{ left: edgeContextMenu.x, top: edgeContextMenu.y }}
+          role="menu"
+          aria-label="Edge partition menu"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <button
+            className={`sf-context-menu__item ${isEdgePartitioned ? 'active' : ''}`}
+            onClick={() => togglePartitionEdge(edgeContextMenu.edgeId)}
+          >
+            {isEdgePartitioned ? 'Heal partition' : 'Partition edge'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

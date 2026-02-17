@@ -14,6 +14,7 @@ An open-source system design simulator. Drag-and-drop cloud resources, connect t
 - **Save/Load** - Export and import designs as `.simforge.json` files
 - **Shareable URLs** - Copy a compressed URL hash with full topology + simulation config
 - **Embeddable Widget** - Render shared architectures in a read-only iframe view
+- **Chaos Engineering** - Inject node faults, edge partitions, and scenario presets to visualize failure cascades
 
 ## Quick Start
 

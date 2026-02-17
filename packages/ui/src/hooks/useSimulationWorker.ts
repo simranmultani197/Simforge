@@ -1,6 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import { useSimulationStore } from '../stores/simulation-store';
 import { useTopologyStore } from '../stores/topology-store';
+import { useChaosStore } from '../stores/chaos-store';
 
 /**
  * Hook that manages the simulation Web Worker lifecycle
@@ -19,6 +20,7 @@ export function useSimulationWorker() {
   const stepSim = useSimulationStore((s) => s.step);
   const resetSim = useSimulationStore((s) => s.reset);
   const toSimTopology = useTopologyStore((s) => s.toSimTopology);
+  const getEffectiveTopology = useChaosStore((s) => s.getEffectiveTopology);
 
   // Initialize worker on mount, terminate on unmount
   useEffect(() => {
@@ -27,20 +29,20 @@ export function useSimulationWorker() {
   }, [initWorker, terminateWorker]);
 
   const start = useCallback(() => {
-    const topology = toSimTopology();
+    const topology = getEffectiveTopology(toSimTopology());
     if (topology.nodes.length === 0) return;
     startSim(topology);
-  }, [toSimTopology, startSim]);
+  }, [getEffectiveTopology, toSimTopology, startSim]);
 
   const pause = useCallback(() => {
     pauseSim();
   }, [pauseSim]);
 
   const step = useCallback(() => {
-    const topology = toSimTopology();
+    const topology = getEffectiveTopology(toSimTopology());
     if (topology.nodes.length === 0) return;
     stepSim(topology);
-  }, [toSimTopology, stepSim]);
+  }, [getEffectiveTopology, toSimTopology, stepSim]);
 
   const reset = useCallback(() => {
     resetSim();

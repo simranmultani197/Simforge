@@ -7,9 +7,12 @@ import {
 } from '@xyflow/react';
 import type { SimforgeEdge as SimforgeEdgeType } from '../../../types/flow';
 import { useSimulationStore } from '../../../stores/simulation-store';
+import { useChaosStore } from '../../../stores/chaos-store';
 
 function SimforgeEdgeComponent({
   id,
+  source,
+  target,
   sourceX,
   sourceY,
   targetX,
@@ -21,6 +24,14 @@ function SimforgeEdgeComponent({
   style,
 }: EdgeProps<SimforgeEdgeType>) {
   const isRunning = useSimulationStore((s) => s.status === 'running');
+  const isPartitioned = useChaosStore((s) => s.partitionedEdgeIds.includes(id));
+  const sourceFault = useChaosStore((s) => s.nodeFaults[source]);
+  const targetFault = useChaosStore((s) => s.nodeFaults[target]);
+  const hasKillFault = Boolean(sourceFault?.kill || targetFault?.kill);
+  const hasDropFault = Boolean(sourceFault?.dropPackets || targetFault?.dropPackets);
+  const hasLatencySpike = Boolean(
+    sourceFault?.latencySpikeFactor || targetFault?.latencySpikeFactor,
+  );
 
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
@@ -49,17 +60,52 @@ function SimforgeEdgeComponent({
         break;
     }
   }
+  if (isPartitioned) {
+    latencyLabel = 'PARTITIONED';
+  }
 
   // Animate edges while simulation is running
+  const stroke = selected
+    ? 'var(--sf-accent)'
+    : isPartitioned || hasKillFault
+      ? 'var(--sf-error)'
+      : hasDropFault
+        ? 'var(--sf-warning)'
+        : isRunning
+          ? 'var(--sf-accent)'
+          : 'var(--sf-text-muted)';
+
+  const strokeWidth = selected
+    ? 2.5
+    : isPartitioned || hasKillFault
+      ? 2.4
+      : hasDropFault
+        ? 2.1
+        : isRunning
+          ? 2
+          : 1.5;
+
+  const strokeDasharray = selected
+    ? 'none'
+    : isPartitioned
+      ? '2 2'
+      : hasDropFault
+        ? '8 4'
+        : '6 4';
+
+  const shouldAnimate = isRunning && !selected && !isPartitioned && !hasKillFault;
+
   const edgeStyle: React.CSSProperties = {
     ...style,
-    stroke: selected ? 'var(--sf-accent)' : isRunning ? 'var(--sf-accent)' : 'var(--sf-text-muted)',
-    strokeWidth: selected ? 2.5 : isRunning ? 2 : 1.5,
-    strokeDasharray: selected ? 'none' : '6 4',
+    stroke,
+    strokeWidth,
+    strokeDasharray,
     strokeDashoffset: 0,
-    opacity: selected ? 1 : isRunning ? 0.8 : 0.6,
+    opacity: selected ? 1 : isPartitioned ? 1 : hasLatencySpike ? 0.95 : isRunning ? 0.8 : 0.6,
     transition: 'stroke 0.2s ease, stroke-width 0.2s ease, opacity 0.2s ease',
-    ...(isRunning && !selected ? { animation: 'sf-flow-dash 0.6s linear infinite' } : {}),
+    ...(shouldAnimate
+      ? { animation: `sf-flow-dash ${hasDropFault ? '0.35s' : '0.6s'} linear infinite` }
+      : {}),
   };
 
   return (
