@@ -32,6 +32,7 @@ packages/
 ```bash
 pnpm dev          # Start development server
 pnpm test         # Run all tests
+pnpm test:e2e     # Run Playwright end-to-end tests
 pnpm test:watch   # Run tests in watch mode
 pnpm lint         # Lint all packages
 pnpm typecheck    # Type-check all packages
@@ -60,12 +61,13 @@ Valid scopes: `types`, `engine`, `ui`, `ci`, `docs`, `deps`
 2. Create a feature branch from `main`
 3. Make your changes
 4. Add tests for new functionality
-5. Run `pnpm test && pnpm lint && pnpm typecheck` to verify
+5. Run `pnpm test && pnpm test:e2e && pnpm lint && pnpm typecheck` to verify
 6. Submit a pull request
 
 ### PR Checklist
 
 - [ ] Tests added/updated
+- [ ] E2E tests added/updated for user-visible behavior changes
 - [ ] Types updated if needed
 - [ ] No lint or typecheck errors
 - [ ] Commit messages follow conventional commits
