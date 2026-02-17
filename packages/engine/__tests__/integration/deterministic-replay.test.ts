@@ -137,7 +137,67 @@ const chainTopology: SimTopology = {
   ],
 };
 
-// Topology 5: Poisson arrivals
+// Topology 5: API Gateway → LB → Queue → Service → Cache → Database
+const allComponentsTopology: SimTopology = {
+  nodes: [
+    makeNode('gw-1', {
+      kind: 'api-gateway',
+      rateLimitRps: 1200,
+      burstSize: 120,
+      authLatencyMs: { type: 'constant', value: 2 },
+      routes: 16,
+      failureRate: 0.01,
+      maxConcurrentRequests: 2000,
+    }),
+    makeNode('lb-1', {
+      kind: 'load-balancer',
+      algorithm: 'round-robin',
+      maxConnections: 1000000,
+    }),
+    makeNode('queue-1', {
+      kind: 'queue',
+      maxDepth: 1000,
+      processingTimeMs: { type: 'constant', value: 1 },
+      deadLetterEnabled: true,
+    }),
+    makeNode('svc-1', {
+      kind: 'service',
+      replicas: 2,
+      latencyMs: { type: 'normal', mean: 8, stddev: 2 },
+      failureRate: 0.01,
+      maxConcurrency: 500,
+    }),
+    makeNode('cache-1', {
+      kind: 'cache',
+      evictionPolicy: 'lru',
+      maxSizeMb: 512,
+      hitRate: 0.4,
+      hitLatencyMs: { type: 'constant', value: 1 },
+      missLatencyMs: { type: 'constant', value: 3 },
+      ttlMs: 30000,
+      maxEntries: 20000,
+    }),
+    makeNode('db-1', {
+      kind: 'database',
+      engine: 'postgres',
+      maxConnections: 1000,
+      queryLatencyMs: { type: 'constant', value: 12 },
+      writeLatencyMs: { type: 'constant', value: 18 },
+      failureRate: 0.005,
+      connectionPoolSize: 800,
+      replicationFactor: 2,
+    }),
+  ],
+  edges: [
+    makeEdge('e1', 'gw-1', 'lb-1'),
+    makeEdge('e2', 'lb-1', 'queue-1'),
+    makeEdge('e3', 'queue-1', 'svc-1'),
+    makeEdge('e4', 'svc-1', 'cache-1'),
+    makeEdge('e5', 'cache-1', 'db-1'),
+  ],
+};
+
+// Poisson arrivals config
 const poissonConfig: SimulationConfig = {
   seed: 99,
   maxTimeMs: 5000,
@@ -151,6 +211,7 @@ const topologies = [
   { name: 'lb-2-services', topology: lbTopology },
   { name: 'queue-service', topology: queueTopology },
   { name: 'chain', topology: chainTopology },
+  { name: 'all-components', topology: allComponentsTopology },
 ];
 
 describe('Deterministic Replay', () => {
