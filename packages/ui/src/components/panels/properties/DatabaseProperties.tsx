@@ -1,5 +1,6 @@
 import { useTopologyStore } from '../../../stores/topology-store';
 import { FormField } from '../../common/FormField';
+import { PresetSelector } from '../../common/PresetSelector';
 import type { DatabaseFlowNode } from '../../../types/flow';
 
 interface Props {
@@ -28,6 +29,13 @@ export function DatabaseProperties({ node }: Props) {
           value={node.data.label}
           onChange={(e) => updateNodeLabel(node.id, e.target.value)}
           className="sf-input"
+        />
+      </FormField>
+
+      <FormField label="Preset">
+        <PresetSelector
+          kind="database"
+          onApply={(presetConfig) => updateNodeConfig(node.id, presetConfig)}
         />
       </FormField>
 

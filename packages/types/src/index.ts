@@ -19,3 +19,5 @@ export type {
 } from './simulation';
 
 export type { MetricsSample, SimulationMetrics } from './metrics';
+
+export type { CloudProvider, ComponentPreset } from './presets';

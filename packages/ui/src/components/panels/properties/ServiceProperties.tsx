@@ -1,5 +1,6 @@
 import { useTopologyStore } from '../../../stores/topology-store';
 import { FormField } from '../../common/FormField';
+import { PresetSelector } from '../../common/PresetSelector';
 import type { ServiceFlowNode } from '../../../types/flow';
 
 interface Props {
@@ -32,6 +33,13 @@ export function ServiceProperties({ node }: Props) {
           value={node.data.label}
           onChange={(e) => updateNodeLabel(node.id, e.target.value)}
           className="sf-input"
+        />
+      </FormField>
+
+      <FormField label="Preset">
+        <PresetSelector
+          kind="service"
+          onApply={(presetConfig) => updateNodeConfig(node.id, presetConfig)}
         />
       </FormField>
 

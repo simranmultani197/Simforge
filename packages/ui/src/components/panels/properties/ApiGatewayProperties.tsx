@@ -1,5 +1,6 @@
 import { useTopologyStore } from '../../../stores/topology-store';
 import { FormField } from '../../common/FormField';
+import { PresetSelector } from '../../common/PresetSelector';
 import type { ApiGatewayFlowNode } from '../../../types/flow';
 
 interface Props {
@@ -28,6 +29,13 @@ export function ApiGatewayProperties({ node }: Props) {
           value={node.data.label}
           onChange={(e) => updateNodeLabel(node.id, e.target.value)}
           className="sf-input"
+        />
+      </FormField>
+
+      <FormField label="Preset">
+        <PresetSelector
+          kind="api-gateway"
+          onApply={(presetConfig) => updateNodeConfig(node.id, presetConfig)}
         />
       </FormField>
 
