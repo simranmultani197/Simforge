@@ -72,6 +72,17 @@ interface EdgeContextMenuState {
   y: number;
 }
 
+function isSimforgeNodeType(value: string): value is SimforgeNodeType {
+  return (
+    value === 'service' ||
+    value === 'load-balancer' ||
+    value === 'queue' ||
+    value === 'database' ||
+    value === 'cache' ||
+    value === 'api-gateway'
+  );
+}
+
 export function SimforgeCanvas({
   readOnly = false,
   emptyTitle = 'Design your system',
@@ -131,17 +142,18 @@ export function SimforgeCanvas({
   const onDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
-      const nodeType = event.dataTransfer.getData(
-        'application/simforge-node',
-      ) as SimforgeNodeType;
-      if (!nodeType) return;
+      const rawNodeType =
+        event.dataTransfer.getData('application/reactflow') ||
+        event.dataTransfer.getData('application/simforge-node') ||
+        event.dataTransfer.getData('text/plain');
+      if (!isSimforgeNodeType(rawNodeType)) return;
 
       const position = screenToFlowPosition({
         x: event.clientX,
         y: event.clientY,
       });
 
-      addNode(nodeType, position);
+      addNode(rawNodeType, position);
     },
     [screenToFlowPosition, addNode],
   );
@@ -230,7 +242,11 @@ export function SimforgeCanvas({
     : false;
 
   return (
-    <div className="h-full w-full relative">
+    <div
+      className="h-full w-full relative"
+      onDragOverCapture={readOnly ? undefined : onDragOver}
+      onDropCapture={readOnly ? undefined : onDrop}
+    >
       {isEmpty && (
         <EmptyCanvasOverlay
           title={emptyTitle}
@@ -247,8 +263,6 @@ export function SimforgeCanvas({
         edgeTypes={edgeTypes}
         defaultEdgeOptions={{ type: 'simforge', animated: false }}
         isValidConnection={readOnly ? undefined : isValidConnection}
-        onDragOver={readOnly ? undefined : onDragOver}
-        onDrop={readOnly ? undefined : onDrop}
         onNodeClick={readOnly ? undefined : onNodeClick}
         onEdgeClick={readOnly ? undefined : onEdgeClick}
         onNodeContextMenu={readOnly ? undefined : onNodeContextMenu}

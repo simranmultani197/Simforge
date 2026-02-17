@@ -123,13 +123,18 @@ const ICON_STYLES: Record<string, React.CSSProperties> = {
 };
 
 export function ComponentPalette() {
+  const addNode = useTopologyStore((state) => state.addNode);
   const fromSimTopology = useTopologyStore((state) => state.fromSimTopology);
   const updateConfig = useSimulationStore((state) => state.updateConfig);
   const { toast } = useToast();
   const { importPresets, exportPresets } = usePresetIO();
 
   const onDragStart = (event: React.DragEvent, nodeType: SimforgeNodeType) => {
+    // React Flow examples use this key; keep it for compatibility.
+    event.dataTransfer.setData('application/reactflow', nodeType);
     event.dataTransfer.setData('application/simforge-node', nodeType);
+    // Some browsers strip custom MIME types during drag; keep a plain-text fallback.
+    event.dataTransfer.setData('text/plain', nodeType);
     event.dataTransfer.effectAllowed = 'move';
   };
 
@@ -139,6 +144,11 @@ export function ComponentPalette() {
       updateConfig(template.config);
     }
     toast(`Loaded template: ${template.name}`, 'success');
+  };
+
+  const addNodeToCenter = (nodeType: SimforgeNodeType) => {
+    // Click fallback for environments where native drag/drop is blocked.
+    addNode(nodeType, { x: 320, y: 180 });
   };
 
   return (
@@ -187,6 +197,14 @@ export function ComponentPalette() {
             className="sf-palette-item"
             draggable
             onDragStart={(e) => onDragStart(e, item.type)}
+            onDoubleClick={() => addNodeToCenter(item.type)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                addNodeToCenter(item.type);
+              }
+            }}
+            title="Drag to canvas or double-click to add"
             role="listitem"
             aria-label={`Drag to add ${item.label}: ${item.description}`}
             tabIndex={0}

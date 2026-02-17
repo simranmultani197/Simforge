@@ -83,15 +83,18 @@ describe('ComponentPalette', () => {
     const firstItem = items[0]!;
 
     // Simulate drag start on the first item (Service)
+    const setDataCalls: Array<[string, string]> = [];
     const mockDataTransfer = {
       setData: (format: string, data: string) => {
-        expect(format).toBe('application/simforge-node');
-        expect(data).toBe('service');
+        setDataCalls.push([format, data]);
       },
       effectAllowed: '',
     };
 
     fireEvent.dragStart(firstItem, { dataTransfer: mockDataTransfer });
+    expect(setDataCalls).toContainEqual(['application/reactflow', 'service']);
+    expect(setDataCalls).toContainEqual(['application/simforge-node', 'service']);
+    expect(setDataCalls).toContainEqual(['text/plain', 'service']);
     expect(mockDataTransfer.effectAllowed).toBe('move');
   });
 
@@ -134,5 +137,19 @@ describe('ComponentPalette', () => {
     expect(topologyState.edges.length).toBeGreaterThan(0);
     expect(simState.config.requestDistribution).toBe('poisson');
     expect(simState.config.requestRateRps).toBe(350);
+  });
+
+  it('double-clicking a palette item adds a node to the canvas', () => {
+    render(<ComponentPalette />);
+
+    const serviceItem = screen.getByRole('listitem', {
+      name: /Drag to add Service/i,
+    });
+
+    fireEvent.doubleClick(serviceItem);
+
+    const topologyState = useTopologyStore.getState();
+    expect(topologyState.nodes).toHaveLength(1);
+    expect(topologyState.nodes[0]!.type).toBe('service');
   });
 });
