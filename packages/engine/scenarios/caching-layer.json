@@ -1,0 +1,101 @@
+{
+  "topology": {
+    "nodes": [
+      {
+        "id": "gw-1",
+        "config": {
+          "kind": "api-gateway",
+          "rateLimitRps": 2500,
+          "burstSize": 200,
+          "authLatencyMs": { "type": "constant", "value": 2 },
+          "routes": 18,
+          "failureRate": 0.001,
+          "maxConcurrentRequests": 2000
+        },
+        "position": { "x": 120, "y": 120 },
+        "metadata": { "label": "Public Gateway" }
+      },
+      {
+        "id": "svc-1",
+        "config": {
+          "kind": "service",
+          "replicas": 3,
+          "latencyMs": { "type": "constant", "value": 8 },
+          "failureRate": 0.005,
+          "maxConcurrency": 300
+        },
+        "position": { "x": 360, "y": 120 },
+        "metadata": { "label": "Read API Service" }
+      },
+      {
+        "id": "cache-1",
+        "config": {
+          "kind": "cache",
+          "evictionPolicy": "lru",
+          "maxSizeMb": 512,
+          "hitRate": 0.9,
+          "hitLatencyMs": { "type": "constant", "value": 1 },
+          "missLatencyMs": { "type": "constant", "value": 3 },
+          "ttlMs": 120000,
+          "maxEntries": 300000
+        },
+        "position": { "x": 620, "y": 120 },
+        "metadata": { "label": "Hot Cache" }
+      },
+      {
+        "id": "db-1",
+        "config": {
+          "kind": "database",
+          "engine": "postgres",
+          "maxConnections": 250,
+          "queryLatencyMs": { "type": "normal", "mean": 6, "stddev": 2 },
+          "writeLatencyMs": { "type": "normal", "mean": 12, "stddev": 3 },
+          "failureRate": 0.001,
+          "connectionPoolSize": 200,
+          "replicationFactor": 2
+        },
+        "position": { "x": 860, "y": 120 },
+        "metadata": { "label": "Primary DB" }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "gw-1",
+        "target": "svc-1",
+        "config": {
+          "latencyMs": { "type": "constant", "value": 1 },
+          "bandwidthMbps": 1000,
+          "failureRate": 0
+        }
+      },
+      {
+        "id": "e2",
+        "source": "svc-1",
+        "target": "cache-1",
+        "config": {
+          "latencyMs": { "type": "constant", "value": 1 },
+          "bandwidthMbps": 1000,
+          "failureRate": 0
+        }
+      },
+      {
+        "id": "e3",
+        "source": "cache-1",
+        "target": "db-1",
+        "config": {
+          "latencyMs": { "type": "constant", "value": 1 },
+          "bandwidthMbps": 1000,
+          "failureRate": 0
+        }
+      }
+    ]
+  },
+  "config": {
+    "seed": 42,
+    "maxTimeMs": 15000,
+    "maxEvents": 1000000,
+    "requestRateRps": 1200,
+    "requestDistribution": "constant"
+  }
+}

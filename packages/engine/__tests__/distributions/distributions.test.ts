@@ -70,6 +70,15 @@ describe('Distributions', () => {
   });
 
   describe('normal', () => {
+    it('clamps negative samples to zero', () => {
+      const rng = new SeededRNG(42);
+      const dist: Distribution = { type: 'normal', mean: 0.5, stddev: 5 };
+
+      for (let i = 0; i < 5000; i++) {
+        expect(sample(dist, rng)).toBeGreaterThanOrEqual(0);
+      }
+    });
+
     it('has approximate target mean', () => {
       const rng = new SeededRNG(42);
       const dist: Distribution = { type: 'normal', mean: 100, stddev: 10 };

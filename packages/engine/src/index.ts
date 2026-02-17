@@ -41,3 +41,4 @@ export type { ApiGatewayState } from './behaviors/api-gateway';
 
 // Worker protocol types
 export type { WorkerCommand, WorkerEvent } from './worker/protocol';
+export { SimulationWorkerRuntime } from './worker/runtime';

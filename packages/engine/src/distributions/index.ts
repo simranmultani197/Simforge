@@ -5,21 +5,33 @@ import type { SeededRNG } from '../core/rng';
  * Sample a value from a statistical distribution using the given RNG.
  */
 export function sample(dist: Distribution, rng: SeededRNG): number {
+  let value: number;
+
   switch (dist.type) {
     case 'constant':
-      return dist.value;
+      value = dist.value;
+      break;
 
     case 'uniform':
-      return dist.min + rng.next() * (dist.max - dist.min);
+      value = dist.min + rng.next() * (dist.max - dist.min);
+      break;
 
     case 'exponential':
       // Inverse transform sampling: -ln(U) / rate
-      return -Math.log(1 - rng.next()) / dist.rate;
+      value = -Math.log(1 - rng.next()) / dist.rate;
+      break;
 
     case 'normal':
       // Box-Muller transform
-      return boxMuller(dist.mean, dist.stddev, rng);
+      value = boxMuller(dist.mean, dist.stddev, rng);
+      break;
   }
+
+  if (!Number.isFinite(value)) return 0;
+
+  // Simulation times/latencies must not be negative or events can be
+  // scheduled in the past.
+  return value < 0 ? 0 : value;
 }
 
 /**

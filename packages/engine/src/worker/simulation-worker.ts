@@ -1,4 +1,5 @@
 import type { WorkerCommand, WorkerEvent } from './protocol';
+import { SimulationWorkerRuntime } from './runtime';
 
 declare const self: DedicatedWorkerGlobalScope;
 
@@ -11,34 +12,10 @@ function postEvent(event: WorkerEvent): void {
   self.postMessage(event);
 }
 
-self.onmessage = (e: MessageEvent<WorkerCommand>) => {
-  const command = e.data;
+const runtime = new SimulationWorkerRuntime(postEvent);
 
-  switch (command.type) {
-    case 'init':
-      // TODO: Initialize simulation with topology and config
-      postEvent({ type: 'status', status: 'idle' });
-      break;
+self.addEventListener('message', (e: MessageEvent<WorkerCommand>) => {
+  runtime.handle(e.data);
+});
 
-    case 'start':
-      // TODO: Start simulation loop
-      postEvent({ type: 'status', status: 'running' });
-      break;
-
-    case 'pause':
-      postEvent({ type: 'status', status: 'paused' });
-      break;
-
-    case 'step':
-      // TODO: Process single event
-      break;
-
-    case 'reset':
-      postEvent({ type: 'status', status: 'idle' });
-      break;
-
-    case 'configure':
-      // TODO: Update simulation config
-      break;
-  }
-};
+export {};
