@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@simforge/engine": "workspace:*",
@@ -30,6 +31,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.0.0",
+    "@playwright/test": "^1.55.0",
     "autoprefixer": "^10.4.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "jsdom": "^28.1.0",
