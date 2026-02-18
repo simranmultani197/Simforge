@@ -91,6 +91,7 @@ function applyLatencySpikeToConfig(
         authLatencyMs: multiplyDistribution(config.authLatencyMs, factor),
       };
     case 'load-balancer':
+    case 'client':
       return config;
   }
 }
@@ -116,6 +117,8 @@ function applyKillToConfig(config: ComponentConfig): ComponentConfig {
         maxConcurrentRequests: 0,
         rateLimitRps: 0,
       };
+    case 'client':
+      return config;
   }
 }
 

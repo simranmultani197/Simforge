@@ -1,5 +1,6 @@
 import { useTopologyStore } from '../../../stores/topology-store';
 import { FormField } from '../../common/FormField';
+import { PresetSelector } from '../../common/PresetSelector';
 import type { QueueFlowNode } from '../../../types/flow';
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 export function QueueProperties({ node }: Props) {
   const updateNodeConfig = useTopologyStore((s) => s.updateNodeConfig);
   const updateNodeLabel = useTopologyStore((s) => s.updateNodeLabel);
+  const updateNodePresetId = useTopologyStore((s) => s.updateNodePresetId);
   const { config } = node.data;
 
   return (
@@ -33,6 +35,13 @@ export function QueueProperties({ node }: Props) {
           value={node.data.label}
           onChange={(e) => updateNodeLabel(node.id, e.target.value)}
           className="sf-input"
+        />
+      </FormField>
+
+      <FormField label="Preset">
+        <PresetSelector
+          kind="queue"
+          onApply={(presetConfig, presetId) => { updateNodeConfig(node.id, presetConfig); updateNodePresetId(node.id, presetId); }}
         />
       </FormField>
 

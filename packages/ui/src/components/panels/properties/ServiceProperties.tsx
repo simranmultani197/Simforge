@@ -10,6 +10,7 @@ interface Props {
 export function ServiceProperties({ node }: Props) {
   const updateNodeConfig = useTopologyStore((s) => s.updateNodeConfig);
   const updateNodeLabel = useTopologyStore((s) => s.updateNodeLabel);
+  const updateNodePresetId = useTopologyStore((s) => s.updateNodePresetId);
   const { config } = node.data;
 
   return (
@@ -39,7 +40,7 @@ export function ServiceProperties({ node }: Props) {
       <FormField label="Preset">
         <PresetSelector
           kind="service"
-          onApply={(presetConfig) => updateNodeConfig(node.id, presetConfig)}
+          onApply={(presetConfig, presetId) => { updateNodeConfig(node.id, presetConfig); updateNodePresetId(node.id, presetId); }}
         />
       </FormField>
 

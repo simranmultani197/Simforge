@@ -25,6 +25,9 @@ import type {
 // ---------------------------------------------------------------------------
 
 const DEFAULT_CONFIGS: Record<SimforgeNodeType, ComponentConfig> = {
+  client: {
+    kind: 'client',
+  },
   service: {
     kind: 'service',
     replicas: 1,
@@ -75,6 +78,7 @@ const DEFAULT_CONFIGS: Record<SimforgeNodeType, ComponentConfig> = {
 };
 
 const DEFAULT_LABELS: Record<SimforgeNodeType, string> = {
+  client: 'Client',
   service: 'Service',
   'load-balancer': 'Load Balancer',
   queue: 'Queue',
@@ -110,8 +114,10 @@ interface TopologyState {
   removeEdge: (id: string) => void;
   updateNodeConfig: (id: string, config: Partial<ComponentConfig>) => void;
   updateNodeLabel: (id: string, label: string) => void;
+  updateNodePresetId: (id: string, presetId: string) => void;
   updateEdgeConfig: (id: string, config: Partial<SimforgeEdgeData>) => void;
   deleteSelected: () => void;
+  clearCanvas: () => void;
 
   // Selection
   setSelectedNode: (id: string | null) => void;
@@ -239,6 +245,16 @@ export const useTopologyStore = create<TopologyState>()(
         });
       },
 
+      updateNodePresetId: (id, presetId) => {
+        set({
+          nodes: get().nodes.map((node) =>
+            node.id === id
+              ? { ...node, data: { ...node.data, presetId } }
+              : node,
+          ) as SimforgeNode[],
+        });
+      },
+
       updateEdgeConfig: (id, partialData) => {
         set({
           edges: get().edges.map((edge) =>
@@ -256,6 +272,15 @@ export const useTopologyStore = create<TopologyState>()(
         } else if (selectedEdgeId) {
           get().removeEdge(selectedEdgeId);
         }
+      },
+
+      clearCanvas: () => {
+        set({
+          nodes: [],
+          edges: [],
+          selectedNodeId: null,
+          selectedEdgeId: null,
+        });
       },
 
       // ---- Selection ----

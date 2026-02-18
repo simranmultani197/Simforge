@@ -1,11 +1,15 @@
 import type { ComponentConfig, ComponentPreset, CloudProvider } from '@simforge/types';
 import { servicePresets } from './service-presets';
+import { loadBalancerPresets } from './load-balancer-presets';
+import { queuePresets } from './queue-presets';
 import { databasePresets } from './database-presets';
 import { cachePresets } from './cache-presets';
 import { apiGatewayPresets } from './api-gateway-presets';
 
 export const builtInPresets: ComponentPreset[] = [
   ...servicePresets,
+  ...loadBalancerPresets,
+  ...queuePresets,
   ...databasePresets,
   ...cachePresets,
   ...apiGatewayPresets,

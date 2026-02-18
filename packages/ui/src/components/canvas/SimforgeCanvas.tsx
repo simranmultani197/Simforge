@@ -29,6 +29,7 @@ function EmptyCanvasOverlay({ title, description }: EmptyCanvasOverlayProps) {
         inset: 0,
         zIndex: 5,
         background: 'transparent',
+        pointerEvents: 'none',
       }}
     >
       <svg
@@ -74,6 +75,7 @@ interface EdgeContextMenuState {
 
 function isSimforgeNodeType(value: string): value is SimforgeNodeType {
   return (
+    value === 'client' ||
     value === 'service' ||
     value === 'load-balancer' ||
     value === 'queue' ||
@@ -158,7 +160,7 @@ export function SimforgeCanvas({
     [screenToFlowPosition, addNode],
   );
 
-  // Connection validation
+  // Connection validation — semantic rules based on component types
   const isValidConnection = useCallback(
     (connection: SimforgeEdge | Connection) => {
       // No self-connections
@@ -167,9 +169,51 @@ export function SimforgeCanvas({
       const exists = edges.some(
         (e) => e.source === connection.source && e.target === connection.target,
       );
-      return !exists;
+      if (exists) return false;
+
+      // Semantic connection rules
+      const sourceNode = nodes.find((n) => n.id === connection.source);
+      const targetNode = nodes.find((n) => n.id === connection.target);
+      if (!sourceNode || !targetNode) return false;
+
+      const src = sourceNode.type as SimforgeNodeType;
+      const tgt = targetNode.type as SimforgeNodeType;
+
+      // Nothing can connect INTO a client — clients are entry-only
+      if (tgt === 'client') return false;
+
+      // Database is typically terminal — only allow DB → Service or DB → Cache
+      if (src === 'database' && tgt !== 'service' && tgt !== 'cache') return false;
+
+      // Cache can only forward misses to database or service
+      if (src === 'cache' && tgt !== 'database' && tgt !== 'service') return false;
+
+      // Queue should connect to exactly one consumer (service, database, or cache)
+      if (src === 'queue') {
+        if (tgt !== 'service' && tgt !== 'database' && tgt !== 'cache') return false;
+        // Queue can only have one outgoing edge
+        const queueOutEdges = edges.filter((e) => e.source === sourceNode.id);
+        if (queueOutEdges.length >= 1) return false;
+      }
+
+      // Load balancer should only distribute to services or queues
+      if (src === 'load-balancer') {
+        if (tgt !== 'service' && tgt !== 'queue') return false;
+      }
+
+      // Client should connect to api-gateway, load-balancer, or service (entry points)
+      if (src === 'client') {
+        if (tgt !== 'api-gateway' && tgt !== 'load-balancer' && tgt !== 'service') return false;
+      }
+
+      // API Gateway should connect to service, load-balancer, or queue
+      if (src === 'api-gateway') {
+        if (tgt === 'api-gateway') return false;
+      }
+
+      return true;
     },
-    [edges],
+    [edges, nodes],
   );
 
   // Selection handlers
@@ -244,8 +288,7 @@ export function SimforgeCanvas({
   return (
     <div
       className="h-full w-full relative"
-      onDragOverCapture={readOnly ? undefined : onDragOver}
-      onDropCapture={readOnly ? undefined : onDrop}
+      onDragOver={readOnly ? undefined : onDragOver}
     >
       {isEmpty && (
         <EmptyCanvasOverlay
@@ -268,6 +311,8 @@ export function SimforgeCanvas({
         onNodeContextMenu={readOnly ? undefined : onNodeContextMenu}
         onEdgeContextMenu={readOnly ? undefined : onEdgeContextMenu}
         onPaneClick={readOnly ? undefined : onPaneClick}
+        onDragOver={readOnly ? undefined : onDragOver}
+        onDrop={readOnly ? undefined : onDrop}
         nodesDraggable={!readOnly}
         nodesConnectable={!readOnly}
         elementsSelectable={!readOnly}

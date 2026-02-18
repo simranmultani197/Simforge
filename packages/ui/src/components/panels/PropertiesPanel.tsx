@@ -1,4 +1,5 @@
 import { useTopologyStore } from '../../stores/topology-store';
+import { ClientProperties } from './properties/ClientProperties';
 import { ServiceProperties } from './properties/ServiceProperties';
 import { LoadBalancerProperties } from './properties/LoadBalancerProperties';
 import { QueueProperties } from './properties/QueueProperties';
@@ -7,6 +8,7 @@ import { CacheProperties } from './properties/CacheProperties';
 import { ApiGatewayProperties } from './properties/ApiGatewayProperties';
 import { EdgeProperties } from './properties/EdgeProperties';
 import type {
+  ClientFlowNode,
   ServiceFlowNode,
   LoadBalancerFlowNode,
   QueueFlowNode,
@@ -30,6 +32,8 @@ export function PropertiesPanel() {
 
   if (selectedNode) {
     switch (selectedNode.type) {
+      case 'client':
+        return <ClientProperties node={selectedNode as ClientFlowNode} />;
       case 'service':
         return <ServiceProperties node={selectedNode as ServiceFlowNode} />;
       case 'load-balancer':
