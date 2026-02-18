@@ -18,6 +18,8 @@ export interface MetricsSample {
   droppedRequests: number;
   /** Total requests completed since last sample */
   completedRequests: number;
+  /** Breakdown of dropped requests by reason since last sample */
+  dropReasons: Record<string, number>;
 }
 
 /**

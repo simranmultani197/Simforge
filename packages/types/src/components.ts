@@ -12,12 +12,17 @@ export type Distribution =
  * Each component type has a unique `kind` tag for exhaustive switch handling.
  */
 export type ComponentConfig =
+  | ClientConfig
   | ServiceConfig
   | LoadBalancerConfig
   | QueueConfig
   | DatabaseConfig
   | CacheConfig
   | ApiGatewayConfig;
+
+export interface ClientConfig {
+  kind: 'client';
+}
 
 export interface ServiceConfig {
   kind: 'service';

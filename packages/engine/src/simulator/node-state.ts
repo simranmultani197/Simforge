@@ -11,6 +11,8 @@ import { createCacheState } from '../behaviors/cache';
 import type { CacheState } from '../behaviors/cache';
 import { createApiGatewayState } from '../behaviors/api-gateway';
 import type { ApiGatewayState } from '../behaviors/api-gateway';
+import { createClientState } from '../behaviors/client';
+import type { ClientState } from '../behaviors/client';
 import type { TopologyGraph } from './topology-graph';
 import { getOutTargetIds } from './topology-graph';
 
@@ -23,7 +25,8 @@ export type NodeState =
   | { kind: 'queue'; state: QueueState }
   | { kind: 'database'; state: DatabaseState }
   | { kind: 'cache'; state: CacheState }
-  | { kind: 'api-gateway'; state: ApiGatewayState };
+  | { kind: 'api-gateway'; state: ApiGatewayState }
+  | { kind: 'client'; state: ClientState };
 
 /**
  * Create the initial runtime state for a node based on its config kind.
@@ -49,6 +52,9 @@ export function createNodeState(node: SimNode, graph: TopologyGraph): NodeState 
 
     case 'api-gateway':
       return { kind: 'api-gateway', state: createApiGatewayState(node.config as ApiGatewayConfig) };
+
+    case 'client':
+      return { kind: 'client', state: createClientState() };
   }
 }
 

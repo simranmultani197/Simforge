@@ -89,6 +89,36 @@ describe('MetricsCollector', () => {
     expect(agg.maxThroughputRps).toBeGreaterThan(0);
   });
 
+  it('tracks drop reasons in samples', () => {
+    collector.recordDrop('failure');
+    collector.recordDrop('failure');
+    collector.recordDrop('rate_limited');
+    collector.recordDrop('overloaded');
+
+    const sample = collector.sample(1000, {}, {});
+    expect(sample.droppedRequests).toBe(4);
+    expect(sample.dropReasons).toEqual({
+      failure: 2,
+      rate_limited: 1,
+      overloaded: 1,
+    });
+  });
+
+  it('resets drop reasons after each sample window', () => {
+    collector.recordDrop('failure');
+    collector.sample(1000, {}, {});
+
+    collector.recordDrop('rate_limited');
+    const sample2 = collector.sample(2000, {}, {});
+    expect(sample2.dropReasons).toEqual({ rate_limited: 1 });
+  });
+
+  it('defaults reason to unknown when not provided', () => {
+    collector.recordDrop();
+    const sample = collector.sample(1000, {}, {});
+    expect(sample.dropReasons).toEqual({ unknown: 1 });
+  });
+
   it('handles empty metrics gracefully', () => {
     const agg = collector.aggregate(0, 0);
     expect(agg.totalRequests).toBe(0);

@@ -7,6 +7,7 @@ export class MetricsCollector {
   private latencies: number[] = [];
   private completedInWindow = 0;
   private droppedInWindow = 0;
+  private dropReasonsInWindow: Record<string, number> = {};
   private windowStartTime = 0;
   private samples: MetricsSample[] = [];
   private totalCompleted = 0;
@@ -22,11 +23,13 @@ export class MetricsCollector {
   }
 
   /**
-   * Record a dropped request.
+   * Record a dropped request with an optional reason.
    */
-  recordDrop(): void {
+  recordDrop(reason?: string): void {
     this.droppedInWindow++;
     this.totalDropped++;
+    const key = reason ?? 'unknown';
+    this.dropReasonsInWindow[key] = (this.dropReasonsInWindow[key] ?? 0) + 1;
   }
 
   /**
@@ -52,6 +55,7 @@ export class MetricsCollector {
       activeConnections,
       droppedRequests: this.droppedInWindow,
       completedRequests: this.completedInWindow,
+      dropReasons: { ...this.dropReasonsInWindow },
     };
 
     this.samples.push(metricsample);
@@ -60,6 +64,7 @@ export class MetricsCollector {
     this.latencies = [];
     this.completedInWindow = 0;
     this.droppedInWindow = 0;
+    this.dropReasonsInWindow = {};
     this.windowStartTime = time;
 
     return metricsample;
@@ -102,6 +107,7 @@ export class MetricsCollector {
     this.latencies = [];
     this.completedInWindow = 0;
     this.droppedInWindow = 0;
+    this.dropReasonsInWindow = {};
     this.windowStartTime = 0;
     this.samples = [];
     this.totalCompleted = 0;

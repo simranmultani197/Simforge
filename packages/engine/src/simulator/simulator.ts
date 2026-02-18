@@ -20,6 +20,7 @@ import { handleQueueEnqueue, handleQueueDequeue } from '../behaviors/queue';
 import { handleDatabaseRequest, handleDatabaseComplete } from '../behaviors/database';
 import { handleCacheRequest, handleCacheComplete } from '../behaviors/cache';
 import { handleApiGatewayRequest, handleApiGatewayComplete } from '../behaviors/api-gateway';
+import { handleClientRequest, handleClientComplete } from '../behaviors/client';
 import { generateRequests } from './request-generator';
 
 /**
@@ -256,6 +257,17 @@ export class Simulator {
           outTargetIds,
         );
         break;
+
+      case 'client':
+        handleClientRequest(
+          event,
+          node.config as Extract<typeof node.config, { kind: 'client' }>,
+          nodeState.state,
+          this.engine,
+          this.rng,
+          outTargetIds,
+        );
+        break;
     }
   }
 
@@ -281,6 +293,9 @@ export class Simulator {
         break;
       case 'api-gateway':
         handleApiGatewayComplete(event, nodeState.state);
+        break;
+      case 'client':
+        handleClientComplete(event, nodeState.state);
         break;
       case 'load-balancer':
       case 'queue':
@@ -308,7 +323,7 @@ export class Simulator {
       for (const edge of outEdges) {
         // Check edge failure
         if (edge.config.failureRate > 0 && this.rng.next() < edge.config.failureRate) {
-          this.metrics.recordDrop();
+          this.metrics.recordDrop('edge_failure');
           continue;
         }
 
@@ -329,10 +344,11 @@ export class Simulator {
   }
 
   /**
-   * Handle dropped/failed requests — record in metrics.
+   * Handle dropped/failed requests — record in metrics with reason.
    */
-  private handleDropped(_event: SimEvent): void {
-    this.metrics.recordDrop();
+  private handleDropped(event: SimEvent): void {
+    const reason = (event.payload['reason'] as string) ?? 'unknown';
+    this.metrics.recordDrop(reason);
   }
 
   /**
@@ -387,6 +403,9 @@ export class Simulator {
           break;
         case 'api-gateway':
           activeConnections[nodeId] = nodeState.state.activeRequests;
+          break;
+        case 'client':
+          // Client is a passthrough — no active connections to track
           break;
       }
     }

@@ -1,6 +1,7 @@
 export type {
   Distribution,
   ComponentConfig,
+  ClientConfig,
   ServiceConfig,
   LoadBalancerConfig,
   QueueConfig,

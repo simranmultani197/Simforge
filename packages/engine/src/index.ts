@@ -38,6 +38,8 @@ export { handleCacheRequest, handleCacheComplete } from './behaviors/cache';
 export type { CacheState } from './behaviors/cache';
 export { handleApiGatewayRequest, handleApiGatewayComplete } from './behaviors/api-gateway';
 export type { ApiGatewayState } from './behaviors/api-gateway';
+export { handleClientRequest, handleClientComplete } from './behaviors/client';
+export type { ClientState } from './behaviors/client';
 
 // Worker protocol types
 export type { WorkerCommand, WorkerEvent } from './worker/protocol';
