@@ -1,5 +1,5 @@
+import { useState } from 'react';
 import type { SimforgeNodeType } from '../../types/flow';
-import { usePresetIO } from '../../hooks/usePresetIO';
 import { useTopologyStore } from '../../stores/topology-store';
 import { useSimulationStore } from '../../stores/simulation-store';
 import { useToast } from '../../hooks/useToast';
@@ -15,6 +15,13 @@ interface PaletteItem {
   colorClass: string;
   icon: React.ReactNode;
 }
+
+const ClientIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+);
 
 const ServiceIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -70,6 +77,13 @@ const ApiGatewayIcon = () => (
 
 const PALETTE_ITEMS: PaletteItem[] = [
   {
+    type: 'client',
+    label: 'Client',
+    description: 'Origin of requests into your system',
+    colorClass: 'client',
+    icon: <ClientIcon />,
+  },
+  {
     type: 'service',
     label: 'Service',
     description: 'Processes requests with configurable latency',
@@ -114,6 +128,7 @@ const PALETTE_ITEMS: PaletteItem[] = [
 ];
 
 const ICON_STYLES: Record<string, React.CSSProperties> = {
+  client: { background: 'var(--sf-node-client-soft)', color: 'var(--sf-node-client)' },
   service: { background: 'var(--sf-node-service-soft)', color: 'var(--sf-node-service)' },
   lb: { background: 'var(--sf-node-lb-soft)', color: 'var(--sf-node-lb)' },
   queue: { background: 'var(--sf-node-queue-soft)', color: 'var(--sf-node-queue)' },
@@ -125,9 +140,11 @@ const ICON_STYLES: Record<string, React.CSSProperties> = {
 export function ComponentPalette() {
   const addNode = useTopologyStore((state) => state.addNode);
   const fromSimTopology = useTopologyStore((state) => state.fromSimTopology);
+  const clearCanvas = useTopologyStore((state) => state.clearCanvas);
   const updateConfig = useSimulationStore((state) => state.updateConfig);
+  const resetSim = useSimulationStore((state) => state.reset);
   const { toast } = useToast();
-  const { importPresets, exportPresets } = usePresetIO();
+  const [templatesOpen, setTemplatesOpen] = useState(true);
 
   const onDragStart = (event: React.DragEvent, nodeType: SimforgeNodeType) => {
     // React Flow examples use this key; keep it for compatibility.
@@ -151,45 +168,32 @@ export function ComponentPalette() {
     addNode(nodeType, { x: 320, y: 180 });
   };
 
+  const handleNewCanvas = () => {
+    if (!window.confirm('This will clear the current design. Continue?')) return;
+    clearCanvas();
+    resetSim();
+    toast('Canvas cleared', 'success');
+  };
+
   return (
-    <div className="space-y-2">
-      <div className="sf-template-section">
-        <div className="sf-template-section__title">Quick Templates</div>
-        <div className="sf-template-grid">
-          {builtInTemplates.map((template) => (
-            <button
-              key={template.id}
-              type="button"
-              className="sf-template-card"
-              onClick={() => applyTemplate(template)}
-              aria-label={`Load template ${template.name}`}
-            >
-              <span className="sf-template-card__title">{template.name}</span>
-              <span className="sf-template-card__desc">{template.description}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="sf-palette-actions">
+    <div className="sf-palette-container">
+      {/* New Canvas button at top */}
+      <div className="sf-palette-new-canvas">
         <button
           type="button"
-          className="sf-btn sf-btn--secondary sf-btn--compact"
-          onClick={importPresets}
-          aria-label="Import presets file"
+          className="sf-btn sf-btn--secondary"
+          onClick={handleNewCanvas}
+          aria-label="Clear canvas and start fresh"
+          style={{ width: '100%', fontSize: 13, gap: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
-          Import Presets
-        </button>
-        <button
-          type="button"
-          className="sf-btn sf-btn--secondary sf-btn--compact"
-          onClick={exportPresets}
-          aria-label="Export custom presets file"
-        >
-          Export Presets
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          New Canvas
         </button>
       </div>
 
+      {/* Components section */}
       <div className="space-y-2" role="list" aria-label="Component palette">
         {PALETTE_ITEMS.map((item) => (
           <div
@@ -223,6 +227,50 @@ export function ComponentPalette() {
           </div>
         ))}
       </div>
+
+      {/* Collapsible Quick Templates */}
+      <div className="sf-template-section" style={{ marginTop: 12 }}>
+        <button
+          type="button"
+          className="sf-template-toggle"
+          onClick={() => setTemplatesOpen(!templatesOpen)}
+          aria-expanded={templatesOpen}
+          aria-controls="sf-template-list"
+        >
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ transform: templatesOpen ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.15s ease' }}
+          >
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+          <span>Quick Templates</span>
+          <span className="sf-template-toggle__count">{builtInTemplates.length}</span>
+        </button>
+        {templatesOpen && (
+          <div className="sf-template-grid" id="sf-template-list" style={{ marginTop: 8 }}>
+            {builtInTemplates.map((template) => (
+              <button
+                key={template.id}
+                type="button"
+                className="sf-template-card"
+                onClick={() => applyTemplate(template)}
+                aria-label={`Load template ${template.name}`}
+              >
+                <span className="sf-template-card__title">{template.name}</span>
+                <span className="sf-template-card__desc">{template.description}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
     </div>
   );
 }

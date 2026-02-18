@@ -31,7 +31,9 @@ function EditorAppContent() {
             width: 256,
             flexShrink: 0,
             borderRight: '1px solid var(--sf-border)',
-            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
           }}
         >
           <div className="sf-sidebar__title">Components</div>

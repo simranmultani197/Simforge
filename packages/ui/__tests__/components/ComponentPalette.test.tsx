@@ -24,9 +24,10 @@ describe('ComponentPalette', () => {
     }));
   });
 
-  it('renders all six component types', () => {
+  it('renders all seven component types', () => {
     render(<ComponentPalette />);
 
+    expect(screen.getByText('Client')).toBeDefined();
     expect(screen.getByText('Service')).toBeDefined();
     expect(screen.getByText('Load Balancer')).toBeDefined();
     expect(screen.getByText('Queue')).toBeDefined();
@@ -38,6 +39,7 @@ describe('ComponentPalette', () => {
   it('renders descriptions for each component', () => {
     render(<ComponentPalette />);
 
+    expect(screen.getByText('Origin of requests into your system')).toBeDefined();
     expect(screen.getByText('Processes requests with configurable latency')).toBeDefined();
     expect(screen.getByText('Routes traffic across targets')).toBeDefined();
     expect(screen.getByText('Buffers and processes messages')).toBeDefined();
@@ -55,7 +57,7 @@ describe('ComponentPalette', () => {
 
     // Items have role="listitem"
     const items = screen.getAllByRole('listitem');
-    expect(items).toHaveLength(6);
+    expect(items).toHaveLength(7);
   });
 
   it('items are draggable', () => {
@@ -92,9 +94,9 @@ describe('ComponentPalette', () => {
     };
 
     fireEvent.dragStart(firstItem, { dataTransfer: mockDataTransfer });
-    expect(setDataCalls).toContainEqual(['application/reactflow', 'service']);
-    expect(setDataCalls).toContainEqual(['application/simforge-node', 'service']);
-    expect(setDataCalls).toContainEqual(['text/plain', 'service']);
+    expect(setDataCalls).toContainEqual(['application/reactflow', 'client']);
+    expect(setDataCalls).toContainEqual(['application/simforge-node', 'client']);
+    expect(setDataCalls).toContainEqual(['text/plain', 'client']);
     expect(mockDataTransfer.effectAllowed).toBe('move');
   });
 
@@ -102,24 +104,19 @@ describe('ComponentPalette', () => {
     render(<ComponentPalette />);
 
     const items = screen.getAllByRole('listitem');
-    expect(items[0]!.getAttribute('aria-label')).toContain('Service');
-    expect(items[1]!.getAttribute('aria-label')).toContain('Load Balancer');
-    expect(items[2]!.getAttribute('aria-label')).toContain('Queue');
-    expect(items[3]!.getAttribute('aria-label')).toContain('Database');
-    expect(items[4]!.getAttribute('aria-label')).toContain('Cache');
-    expect(items[5]!.getAttribute('aria-label')).toContain('API Gateway');
+    expect(items[0]!.getAttribute('aria-label')).toContain('Client');
+    expect(items[1]!.getAttribute('aria-label')).toContain('Service');
+    expect(items[2]!.getAttribute('aria-label')).toContain('Load Balancer');
+    expect(items[3]!.getAttribute('aria-label')).toContain('Queue');
+    expect(items[4]!.getAttribute('aria-label')).toContain('Database');
+    expect(items[5]!.getAttribute('aria-label')).toContain('Cache');
+    expect(items[6]!.getAttribute('aria-label')).toContain('API Gateway');
   });
 
-  it('renders preset import/export actions', () => {
+  it('renders built-in quick templates (open by default)', () => {
     render(<ComponentPalette />);
 
-    expect(screen.getByRole('button', { name: 'Import presets file' })).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Export custom presets file' })).toBeDefined();
-  });
-
-  it('renders built-in quick templates', () => {
-    render(<ComponentPalette />);
-
+    // Templates section is open by default
     expect(screen.getByRole('button', { name: 'Load template Load-Balanced Services' })).toBeDefined();
     expect(screen.getByRole('button', { name: 'Load template Event-Driven Pipeline' })).toBeDefined();
     expect(screen.getByRole('button', { name: 'Load template Cached Read API' })).toBeDefined();
@@ -128,6 +125,7 @@ describe('ComponentPalette', () => {
   it('applies selected template to topology and simulation config', () => {
     render(<ComponentPalette />);
 
+    // Templates section is open by default
     fireEvent.click(screen.getByRole('button', { name: 'Load template Event-Driven Pipeline' }));
 
     const topologyState = useTopologyStore.getState();

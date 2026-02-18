@@ -1,10 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 @import 'tailwindcss';
 @import '@xyflow/react/dist/style.css';
-
-/* ------------------------------------------------------------------ */
-/* Google Fonts — Inter                                                */
-/* ------------------------------------------------------------------ */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 /* ------------------------------------------------------------------ */
 /* Design Tokens                                                       */
@@ -40,6 +36,9 @@
   --sf-error-soft: rgba(239, 68, 68, 0.1);
 
   /* Node type colors */
+  --sf-node-client: #6366f1;
+  --sf-node-client-soft: rgba(99, 102, 241, 0.08);
+  --sf-node-client-gradient: linear-gradient(135deg, #6366f1, #818cf8);
   --sf-node-service: #3b82f6;
   --sf-node-service-soft: rgba(59, 130, 246, 0.08);
   --sf-node-service-gradient: linear-gradient(135deg, #3b82f6, #6366f1);
@@ -88,6 +87,7 @@
     --sf-warning-soft: rgba(245, 158, 11, 0.15);
     --sf-error-soft: rgba(239, 68, 68, 0.15);
 
+    --sf-node-client-soft: rgba(99, 102, 241, 0.12);
     --sf-node-service-soft: rgba(59, 130, 246, 0.12);
     --sf-node-lb-soft: rgba(139, 92, 246, 0.12);
     --sf-node-queue-soft: rgba(245, 158, 11, 0.12);
@@ -121,6 +121,7 @@
   --sf-warning-soft: rgba(245, 158, 11, 0.15);
   --sf-error-soft: rgba(239, 68, 68, 0.15);
 
+  --sf-node-client-soft: rgba(99, 102, 241, 0.12);
   --sf-node-service-soft: rgba(59, 130, 246, 0.12);
   --sf-node-lb-soft: rgba(139, 92, 246, 0.12);
   --sf-node-queue-soft: rgba(245, 158, 11, 0.12);
@@ -310,6 +311,19 @@ body {
 }
 
 /* Node type variants */
+.sf-node--client {
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
+.sf-node--client::before {
+  background: var(--sf-node-client-gradient);
+}
+
+.sf-node--client.selected {
+  border-color: var(--sf-node-client);
+  box-shadow: 0 0 0 3px var(--sf-node-client-soft), var(--sf-shadow-md);
+}
+
 .sf-node--service {
   border-color: rgba(59, 130, 246, 0.2);
 }
@@ -398,6 +412,11 @@ body {
   flex-shrink: 0;
 }
 
+.sf-node--client .sf-node__icon {
+  background: var(--sf-node-client-soft);
+  color: var(--sf-node-client);
+}
+
 .sf-node--service .sf-node__icon {
   background: var(--sf-node-service-soft);
   color: var(--sf-node-service);
@@ -459,6 +478,60 @@ body {
   border-bottom: 1px solid var(--sf-border);
   background: var(--sf-bg-secondary);
   backdrop-filter: blur(var(--sf-glass-blur));
+  flex-wrap: wrap;
+}
+
+.sf-controls-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sf-controls-mini-metric {
+  font-size: 11px;
+  color: var(--sf-text-secondary);
+  font-weight: 500;
+}
+
+.sf-controls-divider {
+  margin: 0 4px;
+  height: 20px;
+  width: 1px;
+  background: var(--sf-border);
+  flex-shrink: 0;
+}
+
+.sf-controls-more-toggle {
+  display: inline-flex;
+}
+
+.sf-controls-secondary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding-top: 8px;
+  border-top: 1px solid var(--sf-border);
+  flex-wrap: wrap;
+}
+
+.sf-controls-secondary--closed {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .sf-controls-btn-label {
+    display: none;
+  }
+
+  .sf-controls-bar {
+    padding: 6px 8px;
+    gap: 4px;
+  }
+
+  .sf-controls-group {
+    gap: 4px;
+  }
 }
 
 .sf-btn {
@@ -591,6 +664,51 @@ body {
   font-size: 11px;
   color: var(--sf-text-secondary);
   line-height: 1.4;
+}
+
+.sf-palette-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  gap: 4px;
+}
+
+.sf-palette-new-canvas {
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--sf-border);
+}
+
+.sf-template-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sf-text-muted);
+  transition: color 0.15s ease;
+}
+
+.sf-template-toggle:hover {
+  color: var(--sf-text-primary);
+}
+
+.sf-template-toggle__count {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--sf-text-muted);
+  background: var(--sf-bg-tertiary);
+  padding: 1px 6px;
+  border-radius: 10px;
 }
 
 .sf-palette-item:hover {
@@ -926,7 +1044,7 @@ body {
   background: var(--sf-bg-secondary);
   backdrop-filter: blur(8px);
   overflow-y: auto;
-  max-height: 340px;
+  max-height: 440px;
 }
 
 .sf-metrics-panel .recharts-cartesian-grid-horizontal line,
