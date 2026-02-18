@@ -6,8 +6,39 @@ import {
   type EdgeProps,
 } from '@xyflow/react';
 import type { SimforgeEdge as SimforgeEdgeType } from '../../../types/flow';
-import { useSimulationStore } from '../../../stores/simulation-store';
+import { useSimulationStore, type NodeVisualState } from '../../../stores/simulation-store';
 import { useChaosStore } from '../../../stores/chaos-store';
+
+/* ------------------------------------------------------------------ */
+/* Edge health derivation from connected node states                   */
+/* ------------------------------------------------------------------ */
+
+type EdgeHealth = 'healthy' | 'degraded' | 'failing';
+
+function deriveEdgeHealth(
+  sourceState: NodeVisualState,
+  targetState: NodeVisualState,
+): EdgeHealth {
+  if (sourceState === 'failed' || targetState === 'failed') return 'failing';
+  if (sourceState === 'overloaded' || targetState === 'overloaded') return 'degraded';
+  return 'healthy';
+}
+
+const HEALTH_STROKE: Record<EdgeHealth, string> = {
+  healthy: 'var(--sf-success)',
+  degraded: 'var(--sf-warning)',
+  failing: 'var(--sf-error)',
+};
+
+const HEALTH_PARTICLE: Record<EdgeHealth, string> = {
+  healthy: 'var(--sf-accent)',
+  degraded: 'var(--sf-warning)',
+  failing: 'var(--sf-error)',
+};
+
+/* ------------------------------------------------------------------ */
+/* Edge component                                                      */
+/* ------------------------------------------------------------------ */
 
 function SimforgeEdgeComponent({
   id,
@@ -24,6 +55,12 @@ function SimforgeEdgeComponent({
   style,
 }: EdgeProps<SimforgeEdgeType>) {
   const isRunning = useSimulationStore((s) => s.status === 'running');
+  const sourceVisualState = useSimulationStore(
+    (s) => s.nodeVisualStates[source] ?? 'idle',
+  );
+  const targetVisualState = useSimulationStore(
+    (s) => s.nodeVisualStates[target] ?? 'idle',
+  );
   const isPartitioned = useChaosStore((s) => s.partitionedEdgeIds.includes(id));
   const sourceFault = useChaosStore((s) => s.nodeFaults[source]);
   const targetFault = useChaosStore((s) => s.nodeFaults[target]);
@@ -32,6 +69,8 @@ function SimforgeEdgeComponent({
   const hasLatencySpike = Boolean(
     sourceFault?.latencySpikeFactor || targetFault?.latencySpikeFactor,
   );
+
+  const edgeHealth = deriveEdgeHealth(sourceVisualState, targetVisualState);
 
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
@@ -64,7 +103,7 @@ function SimforgeEdgeComponent({
     latencyLabel = 'PARTITIONED';
   }
 
-  // Animate edges while simulation is running
+  // Determine stroke color: chaos faults > health-based > default
   const stroke = selected
     ? 'var(--sf-accent)'
     : isPartitioned || hasKillFault
@@ -72,7 +111,7 @@ function SimforgeEdgeComponent({
       : hasDropFault
         ? 'var(--sf-warning)'
         : isRunning
-          ? 'var(--sf-accent)'
+          ? HEALTH_STROKE[edgeHealth]
           : 'var(--sf-text-muted)';
 
   const strokeWidth = selected
@@ -95,6 +134,8 @@ function SimforgeEdgeComponent({
 
   const shouldAnimate = isRunning && !selected && !isPartitioned && !hasKillFault;
 
+  const particleColor = HEALTH_PARTICLE[edgeHealth];
+
   const edgeStyle: React.CSSProperties = {
     ...style,
     stroke,
@@ -111,6 +152,35 @@ function SimforgeEdgeComponent({
   return (
     <>
       <BaseEdge id={id} path={edgePath} style={edgeStyle} />
+      {shouldAnimate && (
+        <>
+          <defs>
+            <filter id={`glow-${id}`} x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          {[0, 1, 2].map((i) => (
+            <circle
+              key={i}
+              r="3.5"
+              fill={particleColor}
+              opacity={0.85 - i * 0.15}
+              filter={`url(#glow-${id})`}
+            >
+              <animateMotion
+                dur={`${1.2 + i * 0.4}s`}
+                repeatCount="indefinite"
+                begin={`${i * 0.4}s`}
+                path={edgePath}
+              />
+            </circle>
+          ))}
+        </>
+      )}
       {latencyLabel && (
         <EdgeLabelRenderer>
           <div

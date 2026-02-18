@@ -5,6 +5,7 @@ import type {
   MetricsSample,
   SimTopology,
 } from '@simforge/types';
+import { useUiStore } from './ui-store';
 
 // Lightweight event shape for the event log (mirrors SimEvent from @simforge/types)
 export interface LogEvent {
@@ -155,6 +156,9 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
     switch (event.type) {
       case 'status':
         set({ status: event.status });
+        if (event.status === 'running' && !useUiStore.getState().metricsOpen) {
+          useUiStore.getState().toggleMetrics();
+        }
         break;
       case 'metrics': {
         // Derive per-node visual states from active connections
