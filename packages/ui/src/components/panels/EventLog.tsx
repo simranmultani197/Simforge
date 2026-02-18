@@ -6,13 +6,12 @@ import { useSimulationStore } from '../../stores/simulation-store';
 /* ------------------------------------------------------------------ */
 
 const TYPE_COLORS: Record<string, string> = {
-    request_arrive: 'var(--sf-node-service)',
-    request_complete: 'var(--sf-success)',
-    request_drop: 'var(--sf-error)',
-    request_enqueue: 'var(--sf-node-queue)',
-    request_dequeue: '#f59e0b',
-    route: 'var(--sf-node-lb)',
-    timeout: 'var(--sf-warning)',
+    'request.arrive': 'var(--sf-node-service)',
+    'request.complete': 'var(--sf-success)',
+    'request.dropped': 'var(--sf-error)',
+    'queue.dequeue': '#f59e0b',
+    'queue.deadletter': 'var(--sf-error)',
+    'metrics.sample': 'var(--sf-text-muted)',
 };
 
 function getColor(type: string): string {
