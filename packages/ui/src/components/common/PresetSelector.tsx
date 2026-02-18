@@ -4,7 +4,7 @@ import { usePresetStore } from '../../stores/preset-store';
 
 interface PresetSelectorProps {
   kind: ComponentConfig['kind'];
-  onApply: (config: Partial<ComponentConfig>) => void;
+  onApply: (config: Partial<ComponentConfig>, presetId: string) => void;
 }
 
 const PROVIDER_LABELS: Record<CloudProvider, string> = {
@@ -52,7 +52,7 @@ export function PresetSelector({ kind, onApply }: PresetSelectorProps) {
     const preset = presets.find((item) => item.id === value);
     if (!preset) return;
 
-    onApply(preset.config as Partial<ComponentConfig>);
+    onApply(preset.config as Partial<ComponentConfig>, preset.id);
   };
 
   return (

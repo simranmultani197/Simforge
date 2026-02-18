@@ -1,26 +1,19 @@
 import { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import type { ServiceFlowNode } from '../../../types/flow';
+import type { ClientFlowNode } from '../../../types/flow';
 import { getNodeIcon } from '../../../data/icons/cloud-icons';
 import { useNodeVisualClasses } from './useNodeVisualClasses';
 
-function ServiceNodeComponent({ id, data, selected }: NodeProps<ServiceFlowNode>) {
+function ClientNodeComponent({ id, data, selected }: NodeProps<ClientFlowNode>) {
   const stateClass = useNodeVisualClasses(id);
-  const Icon = getNodeIcon('service', data.presetId);
+  const Icon = getNodeIcon('client', data.presetId);
 
   return (
     <div
-      className={`sf-node sf-node--service ${selected ? 'selected' : ''} ${stateClass}`}
+      className={`sf-node sf-node--client ${selected ? 'selected' : ''} ${stateClass}`}
       role="group"
-      aria-label={`Service: ${data.label}`}
+      aria-label={`Client: ${data.label}`}
     >
-      <Handle
-        type="target"
-        position={Position.Top}
-        style={{ background: 'var(--sf-node-service)' }}
-        aria-label="Input connection"
-      />
-
       <div className="flex items-center gap-3">
         <div className="sf-node__icon">
           <Icon />
@@ -30,7 +23,7 @@ function ServiceNodeComponent({ id, data, selected }: NodeProps<ServiceFlowNode>
             {data.label}
           </div>
           <div className="text-[11px] text-[var(--sf-text-secondary)] mt-0.5">
-            {data.config.replicas} replica{data.config.replicas !== 1 ? 's' : ''} · {data.config.maxConcurrency} conc.
+            Request source
           </div>
         </div>
       </div>
@@ -38,11 +31,11 @@ function ServiceNodeComponent({ id, data, selected }: NodeProps<ServiceFlowNode>
       <Handle
         type="source"
         position={Position.Bottom}
-        style={{ background: 'var(--sf-node-service)' }}
+        style={{ background: 'var(--sf-node-client)' }}
         aria-label="Output connection"
       />
     </div>
   );
 }
 
-export const ServiceNode = memo(ServiceNodeComponent);
+export const ClientNode = memo(ClientNodeComponent);

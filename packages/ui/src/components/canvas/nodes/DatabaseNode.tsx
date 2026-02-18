@@ -1,10 +1,12 @@
 import { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { DatabaseFlowNode } from '../../../types/flow';
+import { getNodeIcon } from '../../../data/icons/cloud-icons';
 import { useNodeVisualClasses } from './useNodeVisualClasses';
 
 function DatabaseNodeComponent({ id, data, selected }: NodeProps<DatabaseFlowNode>) {
   const stateClass = useNodeVisualClasses(id);
+  const Icon = getNodeIcon('database', data.presetId);
 
   return (
     <div
@@ -21,21 +23,7 @@ function DatabaseNodeComponent({ id, data, selected }: NodeProps<DatabaseFlowNod
 
       <div className="flex items-center gap-3">
         <div className="sf-node__icon">
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <ellipse cx="12" cy="5" rx="7" ry="3" />
-            <path d="M5 5v14c0 1.7 3.1 3 7 3s7-1.3 7-3V5" />
-            <path d="M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3" />
-          </svg>
+          <Icon />
         </div>
         <div className="min-w-0">
           <div className="text-sm font-semibold text-[var(--sf-text-primary)] truncate">{data.label}</div>

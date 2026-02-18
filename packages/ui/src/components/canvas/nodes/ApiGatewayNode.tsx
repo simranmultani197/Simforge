@@ -1,10 +1,12 @@
 import { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { ApiGatewayFlowNode } from '../../../types/flow';
+import { getNodeIcon } from '../../../data/icons/cloud-icons';
 import { useNodeVisualClasses } from './useNodeVisualClasses';
 
 function ApiGatewayNodeComponent({ id, data, selected }: NodeProps<ApiGatewayFlowNode>) {
   const stateClass = useNodeVisualClasses(id);
+  const Icon = getNodeIcon('api-gateway', data.presetId);
 
   return (
     <div
@@ -21,20 +23,7 @@ function ApiGatewayNodeComponent({ id, data, selected }: NodeProps<ApiGatewayFlo
 
       <div className="flex items-center gap-3">
         <div className="sf-node__icon">
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M12 2l7 4v6c0 5-3.5 9-7 10-3.5-1-7-5-7-10V6l7-4z" />
-            <path d="M9 12h6" />
-          </svg>
+          <Icon />
         </div>
         <div className="min-w-0">
           <div className="text-sm font-semibold text-[var(--sf-text-primary)] truncate">{data.label}</div>
